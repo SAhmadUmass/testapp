@@ -5,3 +5,14 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+
+Use npx expo install for all dependencies. 
+
+We use expo for the app. 
+
+We use expo-router for navigation. 
+
+We use zustand for state management. 
+
+We use nativewind for styling. 
+
