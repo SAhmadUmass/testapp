@@ -6,10 +6,12 @@ export default {
     slug: 'tiktokclone1',
     version: '1.0.0',
     orientation: 'portrait',
-    icon: './assets/icon.png',
+    icon: './assets/images/icon.png',
     userInterfaceStyle: 'light',
+    scheme: 'myapp',
+    newArchEnabled: true,
     splash: {
-      image: './assets/splash.png',
+      image: './assets/images/splash-icon.png',
       resizeMode: 'contain',
       backgroundColor: '#ffffff'
     },
@@ -19,12 +21,18 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/adaptive-icon.png',
+        foregroundImage: './assets/images/adaptive-icon.png',
         backgroundColor: '#ffffff'
       }
     },
     web: {
-      favicon: './assets/favicon.png'
+      favicon: './assets/images/favicon.png'
+    },
+    plugins: [
+      'expo-router'
+    ],
+    experiments: {
+      typedRoutes: true
     },
     extra: {
       firebaseConfig: {
@@ -39,7 +47,6 @@ export default {
       eas: {
         projectId: "your-eas-project-id"
       }
-    },
-    plugins: []
+    }
   }
 }; 

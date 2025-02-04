@@ -16,3 +16,45 @@ We use zustand for state management.
 
 We use nativewind for styling. 
 
+# Babel Configuration Notes for Expo SDK 52+
+
+## Important Changes
+- Starting from SDK 50, `expo-router/babel` plugin has been deprecated and merged into `babel-preset-expo`
+- For SDK 52, keep the Babel configuration minimal and let `babel-preset-expo` handle the transformations
+
+## Correct Configuration
+```
+javascript
+module.exports = function (api) {
+api.cache(true);
+return {
+presets: ['babel-preset-expo']
+};
+};
+```
+
+## Common Pitfalls to Avoid
+1. **Don't add `expo-router/babel` to plugins**
+   - This was needed in SDK 49 and below
+   - In SDK 50+, this functionality is built into `babel-preset-expo`
+   - Adding it manually can cause the error: `.plugins is not a valid Plugin property`
+
+2. **Plugin Order Matters**
+   - If you need additional plugins (like `nativewind/babel` or `react-native-reanimated/plugin`), add them back one at a time
+   - Test after each addition to ensure compatibility
+   - Always clear Metro cache when changing Babel config: `npx expo start -c`
+
+## Troubleshooting
+If you encounter Babel-related errors:
+1. Start with the minimal config shown above
+2. Clear Metro cache: `npx expo start -c`
+3. Add additional plugins one at a time if needed
+4. Verify expo-router version is compatible with your Expo SDK version
+
+## References
+- [Expo Router Installation Guide](https://docs.expo.dev/router/installation/)
+- [Babel Configuration Reference](https://docs.expo.dev/versions/latest/config/babel/)
+## References
+- [Expo Router Installation Guide](https://docs.expo.dev/router/installation/)
+- [Babel Configuration Reference](https://docs.expo.dev/versions/latest/config/babel/)
+- [Expo Config Reference](https://docs.expo.dev/versions/latest/config/app/)
