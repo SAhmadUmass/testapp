@@ -22,6 +22,10 @@ interface AppState {
   // Error States
   error: string | null;
   setError: (error: string | null) => void;
+
+  // Hydration State
+  isHydrated: boolean;
+  setHydrated: (hydrated: boolean) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -43,7 +47,11 @@ export const useStore = create<AppState>()(
       
       // Error States
       error: null,
-      setError: (error) => set({ error })
+      setError: (error) => set({ error }),
+
+      // Hydration State
+      isHydrated: false,
+      setHydrated: (hydrated) => set({ isHydrated: hydrated })
     }),
     {
       name: 'app-storage',
@@ -52,7 +60,12 @@ export const useStore = create<AppState>()(
         user: state.user,
         videos: state.videos,
         currentVideo: state.currentVideo
-      })
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHydrated(true);
+        }
+      }
     }
   )
 ); 

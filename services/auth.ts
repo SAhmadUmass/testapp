@@ -5,8 +5,6 @@ import {
   onAuthStateChanged,
   User,
   updateProfile,
-  GoogleAuthProvider,
-  signInWithPopup
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
 import { FirebaseError } from 'firebase/app';
@@ -57,15 +55,4 @@ export const subscribeToAuthChanges = (
   callback: (user: User | null) => void
 ): (() => void) => {
   return onAuthStateChanged(auth, callback);
-};
-
-export const signInWithGoogle = async (): Promise<{ user: User | null; error: string | null }> => {
-  try {
-    const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    return { user: userCredential.user, error: null };
-  } catch (error) {
-    const firebaseError = error as FirebaseError;
-    return { user: null, error: firebaseError.message };
-  }
 }; 

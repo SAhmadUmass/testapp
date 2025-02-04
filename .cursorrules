@@ -1,39 +1,40 @@
-We only use web/JS Firebase SDK. 
-import from 'firebase/app', 'firebase/auth', etc. NOT '@react-native-firebase/*'.
-Example:
+# Project Rules and Guidelines
+
+## Firebase Configuration
+We only use web/JS Firebase SDK. Import from the following packages:
+```javascript
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+```
 
-Use npx expo install for all dependencies. 
+❌ Do NOT use `@react-native-firebase/*` packages.
 
-We use expo for the app. 
+## Development Guidelines
+- Use `npx expo install` for all dependencies
+- We use Expo for app development
+- We use expo-router for navigation
+- We use zustand for state management
+- We use nativewind for styling
 
-We use expo-router for navigation. 
+## Babel Configuration (Expo SDK 52+)
 
-We use zustand for state management. 
-
-We use nativewind for styling. 
-
-# Babel Configuration Notes for Expo SDK 52+
-
-## Important Changes
+### Important Changes
 - Starting from SDK 50, `expo-router/babel` plugin has been deprecated and merged into `babel-preset-expo`
 - For SDK 52, keep the Babel configuration minimal and let `babel-preset-expo` handle the transformations
 
-## Correct Configuration
-```
-javascript
+### Correct Configuration
+```javascript
 module.exports = function (api) {
-api.cache(true);
-return {
-presets: ['babel-preset-expo']
-};
+  api.cache(true);
+  return {
+    presets: ['babel-preset-expo']
+  };
 };
 ```
 
-## Common Pitfalls to Avoid
+### Common Pitfalls to Avoid
 1. **Don't add `expo-router/babel` to plugins**
    - This was needed in SDK 49 and below
    - In SDK 50+, this functionality is built into `babel-preset-expo`
@@ -44,17 +45,14 @@ presets: ['babel-preset-expo']
    - Test after each addition to ensure compatibility
    - Always clear Metro cache when changing Babel config: `npx expo start -c`
 
-## Troubleshooting
+### Troubleshooting
 If you encounter Babel-related errors:
 1. Start with the minimal config shown above
 2. Clear Metro cache: `npx expo start -c`
 3. Add additional plugins one at a time if needed
 4. Verify expo-router version is compatible with your Expo SDK version
 
-## References
-- [Expo Router Installation Guide](https://docs.expo.dev/router/installation/)
-- [Babel Configuration Reference](https://docs.expo.dev/versions/latest/config/babel/)
-## References
+### References
 - [Expo Router Installation Guide](https://docs.expo.dev/router/installation/)
 - [Babel Configuration Reference](https://docs.expo.dev/versions/latest/config/babel/)
 - [Expo Config Reference](https://docs.expo.dev/versions/latest/config/app/)
