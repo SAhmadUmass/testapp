@@ -1,0 +1,7 @@
+We only use web/JS Firebase SDK. 
+import from 'firebase/app', 'firebase/auth', etc. NOT '@react-native-firebase/*'.
+Example:
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
