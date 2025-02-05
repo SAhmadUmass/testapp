@@ -47,6 +47,10 @@ export default {
       eas: {
         projectId: "your-eas-project-id"
       }
+    },
+    babel: {
+      presets: ['babel-preset-expo'],
+      plugins: ['nativewind/babel']
     }
   }
 }; 

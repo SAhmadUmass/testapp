@@ -12,6 +12,7 @@ import { ROUTES } from '@/utils/routes';
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import Constants from 'expo-constants';
+import '../global.css';
 
 export {
   // Catch any errors thrown by the Layout component.

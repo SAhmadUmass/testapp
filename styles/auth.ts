@@ -1,0 +1,190 @@
+import { StyleSheet } from 'react-native';
+
+export const colors = {
+  primary: '#3B82F6',
+  primaryLight: '#EEF2FF',
+  text: {
+    primary: '#1F2937',
+    secondary: '#6B7280',
+    error: '#DC2626',
+  },
+  border: {
+    default: '#D1D5DB',
+    error: '#FCA5A5',
+    focused: '#3B82F6',
+  },
+  background: {
+    white: 'white',
+    input: {
+      default: '#F9FAFB',
+      focused: '#F8FAFF',
+    },
+    error: '#FEE2E2',
+  },
+  google: '#DB4437',
+};
+
+export const authStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background.white,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+  },
+  mainContent: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  brandSection: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  logoContainer: {
+    width: 96,
+    height: 96,
+    backgroundColor: colors.primaryLight,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  welcomeText: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginBottom: 8,
+  },
+  subtitleText: {
+    fontSize: 16,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    maxWidth: '80%',
+  },
+  formContainer: {
+    gap: 20,
+  },
+  errorContainer: {
+    backgroundColor: colors.background.error,
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border.error,
+  },
+  errorIcon: {
+    marginRight: 8,
+  },
+  errorText: {
+    color: colors.text.error,
+    flex: 1,
+  },
+  input: {
+    height: 48,
+    paddingHorizontal: 16,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    fontSize: 16,
+    color: colors.text.primary,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: 6,
+  },
+  helperText: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  primaryButton: {
+    height: 52,
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  primaryButtonText: {
+    color: colors.background.white,
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border.default,
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: colors.text.secondary,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  googleButton: {
+    height: 52,
+    backgroundColor: colors.background.white,
+    borderWidth: 1.5,
+    borderColor: colors.border.default,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  googleButtonText: {
+    marginLeft: 12,
+    fontWeight: '600',
+    color: colors.text.primary,
+    fontSize: 16,
+  },
+  linkContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 32,
+    opacity: 0.8,
+  },
+  linkText: {
+    color: colors.text.secondary,
+    fontSize: 14,
+  },
+  link: {
+    color: colors.primary,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  passwordHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+}); 
