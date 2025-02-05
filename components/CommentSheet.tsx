@@ -76,9 +76,9 @@ export default function CommentSheet({ videoId, isVisible, onClose, onCommentCou
     // Optimistically update comments array and count
     const newComment = result.data;
     if (newComment) {
-      const updatedComments = [newComment, ...comments];
-      setComments(updatedComments);
-      onCommentCountChange?.(updatedComments.length);
+      // Fetch fresh comments instead of optimistic update
+      // This ensures we have proper server timestamps
+      fetchComments();
     }
   };
 
@@ -115,7 +115,9 @@ export default function CommentSheet({ videoId, isVisible, onClose, onCommentCou
             <View style={styles.commentHeader}>
               <Text style={styles.username}>@{item.user?.username || 'user'}</Text>
               <Text style={styles.timestamp}>
-                {new Date(item.createdAt.toDate()).toLocaleDateString()}
+                {item.createdAt?.toDate?.() 
+                  ? new Date(item.createdAt.toDate()).toLocaleDateString()
+                  : 'Just now'}
               </Text>
             </View>
             <Text style={styles.commentText}>{item.text}</Text>

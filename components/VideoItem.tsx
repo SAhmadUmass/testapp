@@ -54,7 +54,7 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
       <Video
         ref={videoRef}
         style={styles.video}
-        source={{ uri: video.videoUrl }}
+        source={video.isLocal ? video.videoUrl as number : { uri: video.videoUrl as string }}
         resizeMode={ResizeMode.COVER}
         isLooping
         shouldPlay={isActive}
@@ -79,14 +79,16 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
 
         {/* Action Buttons */}
         <View style={[styles.actions, { bottom: TAB_BAR_HEIGHT + insets.bottom + 60 }]}>
-          <View style={styles.actionButton}>
-            <LikeButton 
-              video={{ ...video, likes: likeCount }} 
-              size={28} 
-              onLikeCountChange={setLikeCount}
-            />
-            <Text style={styles.actionText}>{likeCount}</Text>
-          </View>
+          {!video.isLocal && (
+            <View style={styles.actionButton}>
+              <LikeButton 
+                video={{ ...video, likes: likeCount }} 
+                size={28} 
+                onLikeCountChange={setLikeCount}
+              />
+              <Text style={styles.actionText}>{likeCount}</Text>
+            </View>
+          )}
 
           <TouchableOpacity 
             style={styles.actionButton}

@@ -24,6 +24,11 @@ export function LikeButton({ video, size = 28, onLikeCountChange }: LikeButtonPr
   const [isLiked, setIsLiked] = React.useState(false);
   const scale = useSharedValue(1);
 
+  // Skip like functionality for local videos
+  if (video.isLocal) {
+    return null;
+  }
+
   // Check if user has liked the video
   useEffect(() => {
     const checkLikeStatus = async () => {

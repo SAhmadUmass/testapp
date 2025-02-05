@@ -7,6 +7,10 @@ import { fetchVideos, seedVideos } from '@/services/videos';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Import videos at the top level
+const localVideo1 = require('../../assets/videos/12997454_360_640_60fps.mp4');
+const localVideo2 = require('../../assets/videos/12854757_360_640_30fps.mp4');
+
 export default function FeedScreen() {
   const { videos, setVideos } = useStore();
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
@@ -27,7 +31,37 @@ export default function FeedScreen() {
     setIsLoading(true);
     const { videos: newVideos, lastVisible: newLastVisible } = await fetchVideos(lastVideo);
     
-    setVideos(lastVideo ? [...videos, ...newVideos] : newVideos);
+    // Add local test videos if this is the first load
+    if (!lastVideo) {
+      const localTestVideos: VideoPost[] = [
+        {
+          id: 'local1',
+          userId: 'localUser',
+          username: 'LocalTester',
+          videoUrl: localVideo1,
+          caption: 'Local Test Video (60fps)',
+          likes: 0,
+          comments: 0,
+          createdAt: new Date(),
+          isLocal: true
+        },
+        {
+          id: 'local2',
+          userId: 'localUser',
+          username: 'LocalTester',
+          videoUrl: localVideo2,
+          caption: 'Local Test Video (30fps)',
+          likes: 0,
+          comments: 0,
+          createdAt: new Date(),
+          isLocal: true
+        }
+      ];
+      setVideos([...localTestVideos, ...newVideos]);
+    } else {
+      setVideos([...videos, ...newVideos]);
+    }
+    
     setLastVisible(newLastVisible);
     setIsLoading(false);
   };
