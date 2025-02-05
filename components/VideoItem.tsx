@@ -21,6 +21,7 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
   const videoRef = useRef<Video>(null);
   const [status, setStatus] = useState<AVPlaybackStatus>();
   const [showComments, setShowComments] = useState(false);
+  const [commentCount, setCommentCount] = useState(video.comments);
   const insets = useSafeAreaInsets();
   const { height: WINDOW_HEIGHT, width: WINDOW_WIDTH } = Dimensions.get('window');
 
@@ -37,11 +38,6 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
       videoRef.current.pauseAsync();
     }
   }, [isActive]);
-
-  // Add effect to log state changes
-  useEffect(() => {
-    console.log('showComments state changed:', showComments);
-  }, [showComments]);
 
   return (
     <View 
@@ -89,13 +85,10 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
 
           <TouchableOpacity 
             style={styles.actionButton}
-            onPress={() => {
-              console.log('Comment button pressed for video:', video.id);
-              setShowComments(true);
-            }}
+            onPress={() => setShowComments(true)}
           >
             <FontAwesome name="comment" size={28} color="white" />
-            <Text style={styles.actionText}>{video.comments}</Text>
+            <Text style={styles.actionText}>{commentCount}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionButton}>
@@ -110,6 +103,7 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
         videoId={video.id}
         isVisible={showComments}
         onClose={() => setShowComments(false)}
+        onCommentCountChange={setCommentCount}
       />
     </View>
   );

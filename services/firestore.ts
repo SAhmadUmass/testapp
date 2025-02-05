@@ -190,4 +190,42 @@ export const deleteVideoAndComments = async (videoId: string): Promise<{ error: 
   } catch (error) {
     return { error: (error as Error).message };
   }
+};
+
+export const createComment = async (
+  videoId: string,
+  userId: string,
+  text: string
+): Promise<{ data: Comment | null; error: string | null }> => {
+  try {
+    const commentsRef = collection(db, 'videos', videoId, 'comments');
+    const batch = writeBatch(db);
+    
+    // Create the comment document
+    const commentDoc = doc(commentsRef);
+    const commentData = {
+      id: commentDoc.id,
+      videoId,
+      userId,
+      text,
+      likes: 0,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+    
+    batch.set(commentDoc, commentData);
+    
+    // Update the video's comment count
+    const videoRef = doc(db, 'videos', videoId);
+    batch.update(videoRef, {
+      comments: increment(1),
+      updatedAt: serverTimestamp()
+    });
+    
+    await batch.commit();
+    
+    return { data: commentData as Comment, error: null };
+  } catch (error) {
+    return { data: null, error: (error as Error).message };
+  }
 }; 
