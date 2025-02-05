@@ -17,7 +17,7 @@ import {
   increment
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
-import { User, Video } from '../utils/types';
+import { User, Video, Comment } from '../utils/types';
 
 // User Operations
 export const createUserProfile = async (userId: string, userData: Partial<User>) => {
@@ -94,6 +94,27 @@ export const getUserVideos = async (userId: string) => {
       videos.push({ id: doc.id, ...doc.data() } as Video);
     });
     return { data: videos, error: null };
+  } catch (error) {
+    return { data: null, error: (error as Error).message };
+  }
+};
+
+export const getComments = async (videoId: string) => {
+  try {
+    const commentsRef = collection(db, 'videos', videoId, 'comments');
+    const q = query(
+      commentsRef,
+      orderBy('createdAt', 'desc')
+    );
+    
+    const querySnapshot = await getDocs(q);
+    const comments: Comment[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      comments.push({ id: doc.id, ...doc.data() } as Comment);
+    });
+    
+    return { data: comments, error: null };
   } catch (error) {
     return { data: null, error: (error as Error).message };
   }

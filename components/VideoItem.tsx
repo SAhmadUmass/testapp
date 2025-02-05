@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Platform } from 'react-native';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { FontAwesome } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { VideoPost } from '@/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LikeButton } from '@/components/LikeButton';
+import CommentSheet from '@/components/CommentSheet';
 
 interface VideoItemProps {
   video: VideoPost;
@@ -19,6 +20,7 @@ const DEFAULT_TAB_BAR_HEIGHT = 49; // Default height for both iOS and Android
 export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) {
   const videoRef = useRef<Video>(null);
   const [status, setStatus] = useState<AVPlaybackStatus>();
+  const [showComments, setShowComments] = useState(false);
   const insets = useSafeAreaInsets();
   const { height: WINDOW_HEIGHT, width: WINDOW_WIDTH } = Dimensions.get('window');
 
@@ -35,6 +37,11 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
       videoRef.current.pauseAsync();
     }
   }, [isActive]);
+
+  // Add effect to log state changes
+  useEffect(() => {
+    console.log('showComments state changed:', showComments);
+  }, [showComments]);
 
   return (
     <View 
@@ -80,7 +87,13 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
             <Text style={styles.actionText}>{video.likes}</Text>
           </View>
 
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => {
+              console.log('Comment button pressed for video:', video.id);
+              setShowComments(true);
+            }}
+          >
             <FontAwesome name="comment" size={28} color="white" />
             <Text style={styles.actionText}>{video.comments}</Text>
           </TouchableOpacity>
@@ -91,6 +104,13 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
           </TouchableOpacity>
         </View>
       </LinearGradient>
+
+      <CommentSheet
+        key={`comments-${video.id}`}
+        videoId={video.id}
+        isVisible={showComments}
+        onClose={() => setShowComments(false)}
+      />
     </View>
   );
 }
