@@ -16,9 +16,10 @@ import { VideoPost } from '@/types';
 interface LikeButtonProps {
   video: VideoPost;
   size?: number;
+  onLikeCountChange?: (newCount: number) => void;
 }
 
-export function LikeButton({ video, size = 28 }: LikeButtonProps) {
+export function LikeButton({ video, size = 28, onLikeCountChange }: LikeButtonProps) {
   const { user, videos, setVideos } = useStore();
   const [isLiked, setIsLiked] = React.useState(false);
   const scale = useSharedValue(1);
@@ -36,9 +37,11 @@ export function LikeButton({ video, size = 28 }: LikeButtonProps) {
   const updateLocalVideoState = (increment: boolean) => {
     const updatedVideos = videos.map(v => {
       if (v.id === video.id) {
+        const newLikes = increment ? v.likes + 1 : v.likes - 1;
+        onLikeCountChange?.(newLikes);
         return {
           ...v,
-          likes: increment ? v.likes + 1 : v.likes - 1
+          likes: newLikes
         };
       }
       return v;
@@ -78,7 +81,7 @@ export function LikeButton({ video, size = 28 }: LikeButtonProps) {
       setIsLiked(!willLike);
       updateLocalVideoState(!willLike);
     }
-  }, [user, video.id, isLiked, videos, setVideos]);
+  }, [user, video.id, isLiked, videos, setVideos, onLikeCountChange]);
 
   if (!user) return null;
 

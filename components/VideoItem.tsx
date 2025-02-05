@@ -22,6 +22,7 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
   const [status, setStatus] = useState<AVPlaybackStatus>();
   const [showComments, setShowComments] = useState(false);
   const [commentCount, setCommentCount] = useState(video.comments);
+  const [likeCount, setLikeCount] = useState(video.likes);
   const insets = useSafeAreaInsets();
   const { height: WINDOW_HEIGHT, width: WINDOW_WIDTH } = Dimensions.get('window');
 
@@ -79,8 +80,12 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
         {/* Action Buttons */}
         <View style={[styles.actions, { bottom: TAB_BAR_HEIGHT + insets.bottom + 60 }]}>
           <View style={styles.actionButton}>
-            <LikeButton video={video} size={28} />
-            <Text style={styles.actionText}>{video.likes}</Text>
+            <LikeButton 
+              video={{ ...video, likes: likeCount }} 
+              size={28} 
+              onLikeCountChange={setLikeCount}
+            />
+            <Text style={styles.actionText}>{likeCount}</Text>
           </View>
 
           <TouchableOpacity 
