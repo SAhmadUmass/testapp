@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from 'firebase/auth';
-import { Video } from '../utils/types';
+import { VideoPost } from '@/types';
 
 interface AppState {
   // Auth State
@@ -10,10 +10,10 @@ interface AppState {
   setUser: (user: User | null) => void;
   
   // Video State
-  videos: Video[];
-  setVideos: (videos: Video[]) => void;
-  currentVideo: Video | null;
-  setCurrentVideo: (video: Video | null) => void;
+  videos: VideoPost[];
+  setVideos: (videos: VideoPost[]) => void;
+  currentVideo: VideoPost | null;
+  setCurrentVideo: (video: VideoPost | null) => void;
   
   // Loading States
   isLoading: boolean;
