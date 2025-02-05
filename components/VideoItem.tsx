@@ -6,6 +6,7 @@ import { useStore } from '@/store';
 import { VideoPost } from '@/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { LikeButton } from '@/components/LikeButton';
 
 interface VideoItemProps {
   video: VideoPost;
@@ -74,10 +75,10 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
 
         {/* Action Buttons */}
         <View style={[styles.actions, { bottom: TAB_BAR_HEIGHT + insets.bottom + 60 }]}>
-          <TouchableOpacity style={styles.actionButton}>
-            <FontAwesome name="heart" size={28} color="white" />
+          <View style={styles.actionButton}>
+            <LikeButton video={video} size={28} />
             <Text style={styles.actionText}>{video.likes}</Text>
-          </TouchableOpacity>
+          </View>
 
           <TouchableOpacity style={styles.actionButton}>
             <FontAwesome name="comment" size={28} color="white" />

@@ -100,20 +100,52 @@ export const getUserVideos = async (userId: string) => {
 };
 
 // Batch Operations
-export const batchUpdateLikes = async (videoId: string, shouldIncrement: boolean): Promise<{ error: string | null }> => {
+export const batchUpdateLikes = async (
+  videoId: string, 
+  userId: string,
+  shouldIncrement: boolean
+): Promise<{ error: string | null }> => {
   try {
     const batch = writeBatch(db);
     const videoRef = doc(db, 'videos', videoId);
+    const likeRef = doc(db, 'likes', `${userId}_${videoId}`);
     
-    batch.update(videoRef, {
-      likes: shouldIncrement ? increment(1) : increment(-1),
-      updatedAt: serverTimestamp()
-    });
+    if (shouldIncrement) {
+      // Add like
+      batch.set(likeRef, {
+        userId,
+        videoId,
+        createdAt: serverTimestamp()
+      });
+      batch.update(videoRef, {
+        likes: increment(1),
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      // Remove like
+      batch.delete(likeRef);
+      batch.update(videoRef, {
+        likes: increment(-1),
+        updatedAt: serverTimestamp()
+      });
+    }
 
     await batch.commit();
     return { error: null };
   } catch (error) {
+    console.error('Error updating likes:', error);
     return { error: (error as Error).message };
+  }
+};
+
+export const checkIfUserLikedVideo = async (userId: string, videoId: string): Promise<boolean> => {
+  try {
+    const likeRef = doc(db, 'likes', `${userId}_${videoId}`);
+    const likeDoc = await getDoc(likeRef);
+    return likeDoc.exists();
+  } catch (error) {
+    console.error('Error checking like status:', error);
+    return false;
   }
 };
 
