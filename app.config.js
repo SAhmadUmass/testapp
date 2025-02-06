@@ -17,13 +17,15 @@ export default {
     },
     assetBundlePatterns: ['**/*'],
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      bundleIdentifier: 'com.shaheer.tiktokclone'
     },
     android: {
       adaptiveIcon: {
         foregroundImage: './assets/images/adaptive-icon.png',
         backgroundColor: '#ffffff'
-      }
+      },
+      package: 'com.shaheer.tiktokclone'
     },
     web: {
       favicon: './assets/images/favicon.png'
