@@ -35,16 +35,16 @@ export default function AppwriteTest() {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 16,
+        padding: 8,
         position: 'absolute',
-        bottom: 20,
-        left: 0,
-        right: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        bottom: 10,
+        alignSelf: 'center',
+        borderRadius: 8,
+        backgroundColor: 'transparent',
     },
     text: {
-        color: 'white',
-        fontSize: 14,
+        color: '#666',
+        fontSize: 12,
         textAlign: 'center',
     },
 }); 

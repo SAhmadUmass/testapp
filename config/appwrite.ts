@@ -9,10 +9,13 @@ const {
     APPWRITE_PLATFORM_ID = 'com.shaheer.tiktokclone'
 } = Constants.expoConfig?.extra || {};
 
-const client = new Client()
-    .setEndpoint(APPWRITE_ENDPOINT)
-    .setProject(APPWRITE_PROJECT_ID)
-    .setPlatform(APPWRITE_PLATFORM_ID);
+// Initialize the Appwrite client
+const client = new Client();
+
+// Set the endpoint and project ID
+client
+    .setEndpoint(APPWRITE_ENDPOINT) // Your API Endpoint
+    .setProject(APPWRITE_PROJECT_ID); // Your project ID
 
 // Export initialized services
 export const account = new Account(client);

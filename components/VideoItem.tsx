@@ -50,6 +50,7 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
           marginTop: isFirst ? -insets.top : 0,
         }
       ]}
+      key={`video-${video.id}`}
     >
       <Video
         ref={videoRef}

@@ -235,14 +235,16 @@ export const createComment = async (
 };
 */
 
+import { Comment } from '@/utils/types';
+
 // Temporary exports to prevent import errors
-export const createUserProfile = async () => ({ error: 'Not implemented' });
-export const getUserProfile = async () => ({ data: null, error: 'Not implemented' });
-export const createVideo = async () => ({ id: null, error: 'Not implemented' });
+export const createUserProfile = async (userId: string, userData: any) => ({ error: 'Not implemented' });
+export const getUserProfile = async (userId: string) => ({ data: null, error: 'Not implemented' });
+export const createVideo = async (videoData: any) => ({ id: null, error: 'Not implemented' });
 export const getVideos = async () => ({ data: [], error: null });
-export const getUserVideos = async () => ({ data: [], error: 'Not implemented' });
-export const getComments = async () => ({ data: [], error: 'Not implemented' });
-export const batchUpdateLikes = async () => ({ error: 'Not implemented' });
-export const checkIfUserLikedVideo = async () => false;
-export const deleteVideoAndComments = async () => ({ error: 'Not implemented' });
-export const createComment = async () => ({ data: null, error: 'Not implemented' }); 
+export const getUserVideos = async (userId: string) => ({ data: [], error: 'Not implemented' });
+export const getComments = async (videoId: string) => ({ data: [] as Comment[], error: 'Not implemented' });
+export const batchUpdateLikes = async (videoId: string, userId: string, shouldIncrement: boolean) => ({ error: 'Not implemented' });
+export const checkIfUserLikedVideo = async (userId: string, videoId: string) => false;
+export const deleteVideoAndComments = async (videoId: string) => ({ error: 'Not implemented' });
+export const createComment = async (videoId: string, userId: string, text: string) => ({ data: null as Comment | null, error: 'Not implemented' }); 

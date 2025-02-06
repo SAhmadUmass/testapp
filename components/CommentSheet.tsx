@@ -61,7 +61,7 @@ export default function CommentSheet({ videoId, isVisible, onClose, onCommentCou
     if (!user || !commentText.trim() || isSubmitting) return;
     
     setIsSubmitting(true);
-    const result = await createComment(videoId, user.uid, commentText.trim());
+    const result = await createComment(videoId, user.$id, commentText.trim());
     setIsSubmitting(false);
     
     if (result.error) {
@@ -69,18 +69,24 @@ export default function CommentSheet({ videoId, isVisible, onClose, onCommentCou
       return;
     }
     
-    // Clear input and refresh comments
     setCommentText('');
     Keyboard.dismiss();
-    
-    // Optimistically update comments array and count
-    const newComment = result.data;
-    if (newComment) {
-      // Fetch fresh comments instead of optimistic update
-      // This ensures we have proper server timestamps
-      fetchComments();
-    }
+    fetchComments();
   };
+
+  const renderComment = useCallback(({ item }: { item: Comment }) => (
+    <View style={styles.commentContainer} key={item.id}>
+      <View style={styles.commentHeader}>
+        <Text style={styles.username}>@{item.user?.username || 'user'}</Text>
+        <Text style={styles.timestamp}>
+          {item.createdAt?.toDate?.() 
+            ? new Date(item.createdAt.toDate()).toLocaleDateString()
+            : 'Just now'}
+        </Text>
+      </View>
+      <Text style={styles.commentText}>{item.text}</Text>
+    </View>
+  ), []);
 
   const renderContent = () => {
     if (loading) {
@@ -110,21 +116,17 @@ export default function CommentSheet({ videoId, isVisible, onClose, onCommentCou
     return (
       <FlatList
         data={comments}
-        renderItem={({ item }) => (
-          <View style={styles.commentContainer}>
-            <View style={styles.commentHeader}>
-              <Text style={styles.username}>@{item.user?.username || 'user'}</Text>
-              <Text style={styles.timestamp}>
-                {item.createdAt?.toDate?.() 
-                  ? new Date(item.createdAt.toDate()).toLocaleDateString()
-                  : 'Just now'}
-              </Text>
-            </View>
-            <Text style={styles.commentText}>{item.text}</Text>
-          </View>
-        )}
-        keyExtractor={(item) => item.id}
+        renderItem={renderComment}
+        keyExtractor={item => item.id}
         contentContainerStyle={styles.listContainer}
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        getItemLayout={(_, index) => ({
+          length: 80,
+          offset: 80 * index,
+          index,
+        })}
       />
     );
   };

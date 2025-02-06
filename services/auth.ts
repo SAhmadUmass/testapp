@@ -4,20 +4,34 @@ import { Models } from 'appwrite';
 
 export type AppwriteUser = Models.User<Models.Preferences>;
 
+// Helper function to create a valid Appwrite user ID
+const createValidUserId = (): string => {
+  // Generate a unique ID that's guaranteed to be valid
+  return 'user_' + Math.random().toString(36).substring(2, 11);
+};
+
 export const signUp = async (
   email: string,
   password: string,
-  username: string
+  name: string
 ): Promise<{ user: AppwriteUser | null; error: string | null }> => {
   try {
+    // Create user with unique ID
     const user = await account.create(
       ID.unique(),
       email,
       password,
-      username
+      name
     );
+
+    // If creation successful, immediately create a session
+    if (user) {
+      await account.createEmailPasswordSession(email, password);
+    }
+
     return { user, error: null };
   } catch (error: any) {
+    console.error('Signup error:', error);
     return { user: null, error: error.message };
   }
 };
@@ -27,12 +41,13 @@ export const signIn = async (
   password: string
 ): Promise<{ user: AppwriteUser | null; error: string | null }> => {
   try {
-    // First create the session
-    await account.createSession(email, password);
-    // Then get the user data
+    // Create the email password session
+    await account.createEmailPasswordSession(email, password);
+    // Get the user data
     const user = await account.get();
     return { user, error: null };
   } catch (error: any) {
+    console.error('Login error:', error);
     return { user: null, error: error.message };
   }
 };
@@ -42,6 +57,7 @@ export const logout = async (): Promise<{ error: string | null }> => {
     await account.deleteSession('current');
     return { error: null };
   } catch (error: any) {
+    console.error('Logout error:', error); // For debugging
     return { error: error.message };
   }
 };
