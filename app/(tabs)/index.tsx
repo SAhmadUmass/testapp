@@ -4,7 +4,6 @@ import { useStore } from '@/store';
 import VideoItem from '@/components/VideoItem';
 import { VideoPost } from '@/types';
 import { fetchVideos, seedVideos } from '@/services/videos';
-import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppwriteTest from '../../components/AppwriteTest';
 
@@ -16,7 +15,6 @@ export default function FeedScreen() {
   const { videos, setVideos } = useStore();
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData>>();
   const insets = useSafeAreaInsets();
   const { height: WINDOW_HEIGHT } = Dimensions.get('window');
 
@@ -26,52 +24,45 @@ export default function FeedScreen() {
   }, []);
 
   // Load videos function
-  const loadVideos = async (lastVideo?: QueryDocumentSnapshot<DocumentData>) => {
+  const loadVideos = async () => {
     if (isLoading) return;
     
     setIsLoading(true);
-    const { videos: newVideos, lastVisible: newLastVisible } = await fetchVideos(lastVideo);
+    const { videos: newVideos } = await fetchVideos();
     
     // Add local test videos if this is the first load
-    if (!lastVideo) {
-      const localTestVideos: VideoPost[] = [
-        {
-          id: 'local1',
-          userId: 'localUser',
-          username: 'LocalTester',
-          videoUrl: localVideo1,
-          caption: 'Local Test Video (60fps)',
-          likes: 0,
-          comments: 0,
-          createdAt: new Date(),
-          isLocal: true
-        },
-        {
-          id: 'local2',
-          userId: 'localUser',
-          username: 'LocalTester',
-          videoUrl: localVideo2,
-          caption: 'Local Test Video (30fps)',
-          likes: 0,
-          comments: 0,
-          createdAt: new Date(),
-          isLocal: true
-        }
-      ];
-      setVideos([...localTestVideos, ...newVideos]);
-    } else {
-      setVideos([...videos, ...newVideos]);
-    }
-    
-    setLastVisible(newLastVisible);
+    const localTestVideos: VideoPost[] = [
+      {
+        id: 'local1',
+        userId: 'localUser',
+        username: 'LocalTester',
+        videoUrl: localVideo1,
+        caption: 'Local Test Video (60fps)',
+        likes: 0,
+        comments: 0,
+        createdAt: new Date(),
+        isLocal: true
+      },
+      {
+        id: 'local2',
+        userId: 'localUser',
+        username: 'LocalTester',
+        videoUrl: localVideo2,
+        caption: 'Local Test Video (30fps)',
+        likes: 0,
+        comments: 0,
+        createdAt: new Date(),
+        isLocal: true
+      }
+    ];
+    setVideos([...localTestVideos, ...newVideos]);
     setIsLoading(false);
   };
 
   // Handle end reached (infinite scroll)
   const handleEndReached = () => {
-    if (!isLoading && lastVisible) {
-      loadVideos(lastVisible);
-    }
+    // Disabled for now until we implement pagination with Appwrite
+    return;
   };
 
   // Handle seeding
@@ -84,7 +75,7 @@ export default function FeedScreen() {
 
   // Configure which items are considered "viewable"
   const viewabilityConfig: ViewabilityConfig = {
-    itemVisiblePercentThreshold: 80 // Increased threshold for better accuracy
+    itemVisiblePercentThreshold: 80
   };
 
   // Handle viewability changes
@@ -120,9 +111,7 @@ export default function FeedScreen() {
   };
 
   return (
-    <View 
-      style={styles.container}
-    >
+    <View style={styles.container}>
       {/* Temporary Seed Button */}
       <TouchableOpacity 
         style={[styles.seedButton, { top: insets.top + 10 }]} 

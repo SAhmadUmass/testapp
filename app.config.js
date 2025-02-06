@@ -2,52 +2,45 @@ import 'dotenv/config';
 
 export default {
   expo: {
-    name: 'tiktokclone1',
-    slug: 'tiktokclone1',
+    name: 'testapp',
+    slug: 'testapp',
     version: '1.0.0',
     orientation: 'portrait',
-    icon: './assets/images/icon.png',
+    icon: './assets/icon.png',
     userInterfaceStyle: 'light',
-    scheme: 'myapp',
-    newArchEnabled: true,
     splash: {
-      image: './assets/images/splash-icon.png',
+      image: './assets/splash.png',
       resizeMode: 'contain',
       backgroundColor: '#ffffff'
     },
-    assetBundlePatterns: ['**/*'],
+    assetBundlePatterns: [
+      '**/*'
+    ],
     ios: {
       supportsTablet: true,
-      bundleIdentifier: 'com.shaheer.tiktokclone'
+      bundleIdentifier: 'com.testapp'
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: './assets/images/adaptive-icon.png',
+        foregroundImage: './assets/adaptive-icon.png',
         backgroundColor: '#ffffff'
       },
-      package: 'com.shaheer.tiktokclone'
+      package: 'com.testapp'
     },
     web: {
-      favicon: './assets/images/favicon.png'
+      favicon: './assets/favicon.png'
     },
     plugins: [
       'expo-router'
     ],
-    experiments: {
-      typedRoutes: true
-    },
+    scheme: 'testapp',
     extra: {
-      // Appwrite Configuration
-      APPWRITE_ENDPOINT: process.env.APPWRITE_ENDPOINT,
-      APPWRITE_PROJECT_ID: process.env.APPWRITE_PROJECT_ID,
-      APPWRITE_PLATFORM_ID: process.env.APPWRITE_PLATFORM_ID,
+      // Remove Firebase config
+      appwriteEndpoint: process.env.APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1',
+      appwriteProjectId: process.env.APPWRITE_PROJECT_ID,
       eas: {
-        projectId: "your-eas-project-id"
+        projectId: process.env.EAS_PROJECT_ID
       }
-    },
-    babel: {
-      presets: ['babel-preset-expo'],
-      plugins: ['nativewind/babel']
     }
   }
 }; 

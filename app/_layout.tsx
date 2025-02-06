@@ -9,9 +9,6 @@ import { View, ActivityIndicator } from 'react-native';
 import { useColorScheme } from '@/components/useColorScheme';
 import { subscribeToAuthChanges } from '@/services/auth';
 import { ROUTES } from '@/utils/routes';
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import Constants from 'expo-constants';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 
@@ -27,29 +24,6 @@ export const unstable_settings = {
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
-
-// Initialize Firebase in a controlled manner
-function useFirebaseInit() {
-  const [isFirebaseReady, setIsFirebaseReady] = useState(false);
-
-  useEffect(() => {
-    const firebaseConfig = Constants.expoConfig?.extra?.firebaseConfig;
-    if (!firebaseConfig) {
-      throw new Error('Firebase configuration is not provided in app.config.js');
-    }
-
-    try {
-      initializeApp(firebaseConfig);
-      getAuth(); // Initialize auth
-      setIsFirebaseReady(true);
-    } catch (error) {
-      console.error('Firebase initialization error:', error);
-      throw error;
-    }
-  }, []);
-
-  return isFirebaseReady;
-}
 
 // Separate component for auth navigation logic
 function AuthNavigationHandler() {
@@ -90,19 +64,17 @@ export default function RootLayout() {
     ...FontAwesome.font,
   });
 
-  const isFirebaseReady = useFirebaseInit();
-
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded && isFirebaseReady) {
+    if (loaded) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, isFirebaseReady]);
+  }, [loaded]);
 
-  if (!loaded || !isFirebaseReady) {
+  if (!loaded) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" />

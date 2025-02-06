@@ -1,5 +1,9 @@
+// TODO: Migrate to Appwrite Database
+// Temporarily commented out to focus on auth migration
+/*
 import { collection, query, orderBy, limit, getDocs, startAfter, DocumentData, QueryDocumentSnapshot, addDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase';
+*/
 import { VideoPost } from '@/types';
 
 const VIDEOS_PER_BATCH = 5;
@@ -53,53 +57,15 @@ const sampleVideos = [
   },
 ];
 
+// Temporary mock implementations
 export const seedVideos = async (): Promise<void> => {
-  try {
-    const videosCollection = collection(db, 'videos');
-    
-    for (const video of sampleVideos) {
-      await addDoc(videosCollection, video);
-      console.log('Added video:', video.caption);
-    }
-    
-    console.log('Successfully seeded videos!');
-  } catch (error) {
-    console.error('Error seeding videos:', error);
-  }
+  console.log('Video seeding disabled while migrating to Appwrite');
 };
 
-export const fetchVideos = async (
-  lastVideo?: QueryDocumentSnapshot<DocumentData>
-): Promise<{ videos: VideoPost[]; lastVisible: QueryDocumentSnapshot<DocumentData> | undefined }> => {
-  try {
-    let videosQuery = query(
-      collection(db, 'videos'),
-      orderBy('createdAt', 'desc'),
-      limit(VIDEOS_PER_BATCH)
-    );
-
-    // If we have a last video, start after it
-    if (lastVideo) {
-      videosQuery = query(
-        collection(db, 'videos'),
-        orderBy('createdAt', 'desc'),
-        startAfter(lastVideo),
-        limit(VIDEOS_PER_BATCH)
-      );
-    }
-
-    const querySnapshot = await getDocs(videosQuery);
-    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-    
-    const videos = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate() || new Date(),
-    })) as VideoPost[];
-
-    return { videos, lastVisible };
-  } catch (error) {
-    console.error('Error fetching videos:', error);
-    return { videos: [], lastVisible: undefined };
-  }
+export const fetchVideos = async (): Promise<{ videos: VideoPost[]; lastVisible: any }> => {
+  // Return sample videos for now
+  return {
+    videos: sampleVideos as VideoPost[],
+    lastVisible: undefined
+  };
 }; 

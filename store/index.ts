@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { User } from 'firebase/auth';
+import { AppwriteUser } from '@/services/auth';
 import { VideoPost } from '@/types';
 
 interface AppState {
   // Auth State
-  user: User | null;
-  setUser: (user: User | null) => void;
+  user: AppwriteUser | null;
+  setUser: (user: AppwriteUser | null) => void;
   
   // Video State
   videos: VideoPost[];

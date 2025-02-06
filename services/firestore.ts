@@ -1,3 +1,7 @@
+// TODO: This file will be replaced with Appwrite database operations
+// Temporarily commented out while migrating to Appwrite
+
+/*
 import {
   collection,
   doc,
@@ -228,4 +232,17 @@ export const createComment = async (
   } catch (error) {
     return { data: null, error: (error as Error).message };
   }
-}; 
+};
+*/
+
+// Temporary exports to prevent import errors
+export const createUserProfile = async () => ({ error: 'Not implemented' });
+export const getUserProfile = async () => ({ data: null, error: 'Not implemented' });
+export const createVideo = async () => ({ id: null, error: 'Not implemented' });
+export const getVideos = async () => ({ data: [], error: null });
+export const getUserVideos = async () => ({ data: [], error: 'Not implemented' });
+export const getComments = async () => ({ data: [], error: 'Not implemented' });
+export const batchUpdateLikes = async () => ({ error: 'Not implemented' });
+export const checkIfUserLikedVideo = async () => false;
+export const deleteVideoAndComments = async () => ({ error: 'Not implemented' });
+export const createComment = async () => ({ data: null, error: 'Not implemented' }); 

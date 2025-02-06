@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, Dimensions } from 'react-native';
 import { useStore } from '@/store';
 import { logout } from '@/services/auth';
-import { User } from 'firebase/auth';
+import { AppwriteUser } from '@/services/auth';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -34,50 +34,24 @@ export default function ProfileScreen() {
 
       {/* Profile Card */}
       <View style={styles.profileCard}>
-        <View style={styles.profileImageContainer}>
-          <Image
-            source={{ uri: (user as User)?.photoURL || 'https://via.placeholder.com/100' }}
-            style={styles.profileImage}
-          />
-        </View>
-        <Text style={styles.displayName}>{(user as User)?.displayName || 'User'}</Text>
-        <Text style={styles.email}>{(user as User)?.email}</Text>
+        <Image
+          source={{ uri: user?.prefs?.avatarUrl || 'https://via.placeholder.com/150' }}
+          style={styles.avatar}
+        />
+        <Text style={styles.name}>{user?.name || 'Anonymous User'}</Text>
+        <Text style={styles.email}>{user?.email}</Text>
 
-        {/* Stats Section */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>0</Text>
-            <Text style={styles.statLabel}>Posts</Text>
-          </View>
-          <View style={[styles.statItem, styles.statBorder]}>
-            <Text style={styles.statNumber}>0</Text>
-            <Text style={styles.statLabel}>Followers</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>0</Text>
-            <Text style={styles.statLabel}>Following</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Settings Options */}
-      <View style={styles.settingsContainer}>
-        <TouchableOpacity style={styles.settingsItem}>
-          <MaterialIcons name="settings" size={24} color="#374151" />
-          <Text style={styles.settingsText}>Settings</Text>
-          <MaterialIcons name="chevron-right" size={24} color="#9CA3AF" />
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={handleLogout}
+          disabled={isLoading}
+        >
+          <MaterialIcons name="logout" size={24} color="#DC2626" />
+          <Text style={styles.logoutText}>
+            {isLoading ? 'Logging out...' : 'Logout'}
+          </Text>
         </TouchableOpacity>
       </View>
-
-      {/* Logout Button */}
-      <TouchableOpacity
-        style={[styles.logoutButton, isLoading && styles.logoutButtonDisabled]}
-        onPress={handleLogout}
-        disabled={isLoading}
-      >
-        <MaterialIcons name="logout" size={20} color="#DC2626" />
-        <Text style={styles.logoutButtonText}>Logout</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -85,7 +59,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#ffffff',
   },
   gradient: {
     position: 'absolute',
@@ -95,24 +69,21 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   header: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-    backgroundColor: 'white',
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    textAlign: 'center',
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1F2937',
   },
   profileCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 20,
+    margin: 20,
     alignItems: 'center',
-    paddingVertical: 24,
-  },
-  profileImageContainer: {
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -122,100 +93,32 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 5,
   },
-  profileImage: {
+  avatar: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    borderWidth: 4,
-    borderColor: 'white',
+    marginBottom: 16,
   },
-  displayName: {
+  name: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#111827',
-    marginTop: 16,
+    fontWeight: '600',
+    color: '#1F2937',
     marginBottom: 4,
   },
   email: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#6B7280',
     marginBottom: 24,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    width: width - 48,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    marginHorizontal: 24,
-    paddingVertical: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  statBorder: {
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  statNumber: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#111827',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 4,
-  },
-  settingsContainer: {
-    paddingHorizontal: 24,
-    marginTop: 24,
-  },
-  settingsItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    padding: 16,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  settingsText: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
-    color: '#374151',
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 24,
-    marginTop: 'auto',
-    marginBottom: 24,
-    padding: 16,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#FEE2E2',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderRadius: 12,
   },
-  logoutButtonDisabled: {
-    opacity: 0.7,
-  },
-  logoutButtonText: {
+  logoutText: {
     marginLeft: 8,
     fontSize: 16,
     fontWeight: '600',
