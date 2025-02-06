@@ -6,6 +6,7 @@ import { VideoPost } from '@/types';
 import { fetchVideos, seedVideos } from '@/services/videos';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AppwriteTest from '../../components/AppwriteTest';
 
 // Import videos at the top level
 const localVideo1 = require('../../assets/videos/12997454_360_640_60fps.mp4');
@@ -150,6 +151,8 @@ export default function FeedScreen() {
         snapToInterval={WINDOW_HEIGHT}
         decelerationRate="fast"
       />
+
+      <AppwriteTest />
     </View>
   );
 }

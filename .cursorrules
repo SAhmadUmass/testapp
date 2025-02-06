@@ -1,14 +1,6 @@
 # Project Rules and Guidelines
 
-## Firebase Configuration
-We only use web/JS Firebase SDK. Import from the following packages:
-```javascript
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
-```
-
+We're switching from Firebase to Appwrite.
 ❌ Do NOT use `@react-native-firebase/*` packages.
 
 ## Development Guidelines
