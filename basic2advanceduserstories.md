@@ -1,34 +1,48 @@
-Level 1 - Core Features:
-- "I want to watch videos without an account"
+# TikTok Clone: Basic to Advanced User Stories
+
+## Level 1 - Core Features:
+
+- [ ] **"I want to watch videos without an account"**
   - Firebase Storage (video hosting)
-  - Firestore (video metadata)
-- "I want to create an account"
+  - Firestore (video metadata) #done
+
+- [x] **"I want to create an account"**
   - Firebase Authentication
   - Firestore (user profiles)
-- "I want to scroll through a feed"
-  - Firestore (feed data)
-  - Firebase Storage (video content)
-- "I want to like a video"
+
+- [ ] **"I want to scroll through a feed"**
+  - Firestore (feed data) #done
+  - Firebase Storage (video content) #almost done
+
+- [x] **"I want to like a video"**
   - Firestore (like counters, user-video relationships)
 
-Level 2 - Basic Engagement:
-- "I want to save a video"
+## Level 2 - Basic Engagement:
+
+- [ ] **"I want to save a video"**
   - Firestore (saved videos collection)
-- "I want to leave comments"
+
+- [x] **"I want to leave comments"**
   - Firestore (comments collection)
-- "I want to share a video"
+
+- [ ] **"I want to share a video"**
   - Firebase Dynamic Links
-- "I want to follow creators"
+
+- [ ] **"I want to follow creators"**
   - Firestore (user relationships)
 
-Level 3 - Organization:
-- "I want to view my saved videos"
+## Level 3 - Organization:
+
+- [ ] **"I want to view my saved videos"**
   - Firestore (queries on saved collection)
-- "I want to create a category for saved videos"
+
+- [ ] **"I want to create a category for saved videos"**
   - Firestore (categories collection)
-- "I want to move videos between categories"
+
+- [ ] **"I want to move videos between categories"**
   - Firestore (updates to video-category relationships)
-- "I want to search within my saved videos"
+
+- [ ] **"I want to search within my saved videos"**
   - Firestore (queries with filters)
 
 Level 4 - Advanced Features:
