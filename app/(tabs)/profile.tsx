@@ -3,13 +3,15 @@ import { View, Text, TouchableOpacity, Image, StyleSheet, Dimensions } from 'rea
 import { useStore } from '@/store';
 import { logout } from '@/services/auth';
 import { AppwriteUser } from '@/services/auth';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
   const { user, setUser, isLoading, setIsLoading } = useStore();
+  const router = useRouter();
 
   const handleLogout = async () => {
     setIsLoading(true);
@@ -18,6 +20,10 @@ export default function ProfileScreen() {
       setUser(null);
     }
     setIsLoading(false);
+  };
+
+  const handleBookmarksPress = () => {
+    router.push('/profile/bookmarks');
   };
 
   return (
@@ -40,6 +46,15 @@ export default function ProfileScreen() {
         />
         <Text style={styles.name}>{user?.name || 'Anonymous User'}</Text>
         <Text style={styles.email}>{user?.email}</Text>
+
+        {/* Bookmarks Button */}
+        <TouchableOpacity
+          style={styles.bookmarksButton}
+          onPress={handleBookmarksPress}
+        >
+          <Ionicons name="bookmark" size={24} color="#4F46E5" />
+          <Text style={styles.bookmarksText}>My Bookmarks</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.logoutButton}
@@ -110,6 +125,23 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginBottom: 24,
   },
+  bookmarksButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginBottom: 12,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  bookmarksText: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#4F46E5',
+  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -117,6 +149,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
+    width: '100%',
+    justifyContent: 'center',
   },
   logoutText: {
     marginLeft: 8,

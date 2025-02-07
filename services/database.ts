@@ -384,7 +384,7 @@ export const toggleBookmark = async (videoId: string, userId: string): Promise<{
       );
       return { bookmarked: false };
     } else {
-      // Add bookmark
+      // Add bookmark with relationship attributes
       await databases.createDocument(
         DATABASE_ID,
         COLLECTIONS.BOOKMARKS,
@@ -392,9 +392,10 @@ export const toggleBookmark = async (videoId: string, userId: string): Promise<{
         {
           userId,
           videoId,
-          created_at: new Date().toISOString(),
+          'created-at': new Date().toISOString(),
         }
       );
+      console.log('Created bookmark with userId:', userId, 'videoId:', videoId);
       return { bookmarked: true };
     }
   } catch (error: any) {
@@ -431,5 +432,63 @@ export const getBookmarkCount = async (videoId: string): Promise<number> => {
   } catch (error: any) {
     console.error('Error getting bookmark count:', error);
     return 0;
+  }
+};
+
+// New function to get user's bookmarks with video details
+export const getUserBookmarks = async (userId: string) => {
+  try {
+    // First, get all bookmarks for the user
+    const bookmarksResponse = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.BOOKMARKS,
+      [
+        Query.equal('userId', userId),
+        Query.orderDesc('created-at')
+      ]
+    );
+
+    // Then fetch video details for each bookmark
+    const bookmarksWithVideos = await Promise.all(
+      bookmarksResponse.documents.map(async (bookmark) => {
+        try {
+          const videoResponse = await databases.getDocument(
+            DATABASE_ID,
+            COLLECTIONS.VIDEOS,
+            bookmark.videoId
+          );
+          
+          return {
+            bookmark,
+            video: videoResponse
+          };
+        } catch (error) {
+          console.error('Error fetching video for bookmark:', error);
+          return null;
+        }
+      })
+    );
+
+    // Filter out any null results from failed video fetches
+    const validBookmarks = bookmarksWithVideos.filter(item => item !== null);
+
+    return { data: validBookmarks, error: null };
+  } catch (error: any) {
+    console.error('Error fetching user bookmarks:', error);
+    return { data: null, error: error.message };
+  }
+};
+
+export const getVideo = async (videoId: string) => {
+  try {
+    const response = await databases.getDocument(
+      DATABASE_ID,
+      COLLECTIONS.VIDEOS,
+      videoId
+    );
+    return { data: response as unknown as DBVideo, error: null };
+  } catch (error: any) {
+    console.error('Error fetching video:', error);
+    return { data: null, error: error.message };
   }
 }; 
