@@ -8,7 +8,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LikeButton } from '@/components/LikeButton';
 import CommentSheet from '@/components/CommentSheet';
-import { getLikeCount } from '@/services/database';
+import { getLikeCount, getComments } from '@/services/database';
+import { client, COLLECTIONS, DATABASE_ID } from '@/config/appwrite';
+import { Models } from 'appwrite';
 
 interface VideoItemProps {
   video: VideoPost;
@@ -43,18 +45,55 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
     }
   }, [isActive]);
 
-  // Fetch initial like count
+  // Fetch initial counts
   useEffect(() => {
-    const fetchLikeCount = async () => {
+    const fetchInitialCounts = async () => {
       if (video.isLocal) return;
       try {
-        const count = await getLikeCount(video.id);
-        setLikeCount(count);
+        // Fetch likes
+        const likeCount = await getLikeCount(video.id);
+        setLikeCount(likeCount);
+
+        // Fetch comments to get initial count
+        const commentsResult = await getComments(video.id);
+        if (!commentsResult.error) {
+          setCommentCount(commentsResult.data.length);
+        }
       } catch (error) {
-        console.error('Error fetching like count:', error);
+        console.error('Error fetching counts:', error);
       }
     };
-    fetchLikeCount();
+    fetchInitialCounts();
+  }, [video.id]);
+
+  // Subscribe to realtime updates for comments
+  useEffect(() => {
+    if (!video.id || video.isLocal) return;
+
+    // Subscribe to changes in the comments collection for this video
+    const unsubscribe = client.subscribe(`databases.${DATABASE_ID}.collections.${COLLECTIONS.COMMENTS}.documents`, 
+      response => {
+        // Check if the event is related to this video
+        const document = response.payload as Models.Document;
+        if (document.videoId === video.id) {
+          // Update comment count based on the event type
+          setCommentCount(prevCount => {
+            if (response.events.includes('databases.*.collections.*.documents.*.create')) {
+              return prevCount + 1;
+            }
+            if (response.events.includes('databases.*.collections.*.documents.*.delete')) {
+              return Math.max(0, prevCount - 1);
+            }
+            return prevCount;
+          });
+        }
+      }
+    );
+
+    // Cleanup subscription on unmount
+    return () => {
+      unsubscribe();
+    };
   }, [video.id]);
 
   return (

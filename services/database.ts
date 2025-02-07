@@ -187,10 +187,46 @@ export const getComments = async (videoId: string) => {
       COLLECTIONS.COMMENTS,
       [
         Query.equal('videoId', videoId),
-        Query.orderDesc('created_at')
+        Query.limit(100)
       ]
     );
-    return { data: response.documents as unknown as DBComment[], error: null };
+
+    // Fetch user data for each comment
+    const commentsWithUsers = await Promise.all(
+      response.documents.map(async (comment) => {
+        try {
+          // Ensure userId is in the correct format
+          const userId = comment.userId.$id || comment.userId;
+          
+          const userResponse = await databases.getDocument(
+            DATABASE_ID,
+            COLLECTIONS.USERS,
+            userId
+          );
+          return {
+            ...comment,
+            text: comment['comment-text'],
+            created_at: comment.$createdAt,
+            user: userResponse as unknown as DBUser
+          };
+        } catch (error) {
+          console.error('Error fetching user for comment:', error);
+          return {
+            ...comment,
+            text: comment['comment-text'],
+            created_at: comment.$createdAt,
+            user: { name: 'Unknown User' }
+          };
+        }
+      })
+    );
+
+    // Sort comments by created_at after fetching
+    const sortedComments = commentsWithUsers.sort((a, b) => {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+    return { data: sortedComments as unknown as DBComment[], error: null };
   } catch (error: any) {
     console.error('Error fetching comments:', error);
     return { data: [], error: error.message };
@@ -211,18 +247,44 @@ export const deleteVideoAndComments = async (videoId: string) => {
 
 export const createComment = async (videoId: string, userId: string, text: string) => {
   try {
+    // Validate comment length
+    if (!text || text.trim().length === 0) {
+      return { data: null, error: 'Comment cannot be empty' };
+    }
+    if (text.length > 200) {
+      return { data: null, error: 'Comment cannot exceed 200 characters' };
+    }
+
+    // Ensure userId is in the correct format (remove any leading underscores)
+    const cleanUserId = userId.startsWith('_') ? userId.substring(1) : userId;
+
     const response = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.COMMENTS,
       ID.unique(),
       {
         videoId,
-        userId,
-        text,
-        created_at: new Date().toISOString()
+        userId: cleanUserId,
+        'comment-text': text.trim(),
+        'created-at': new Date().toISOString()
       }
     );
-    return { data: response as unknown as DBComment, error: null };
+
+    // Fetch the user data to return with the comment
+    const userResponse = await databases.getDocument(
+      DATABASE_ID,
+      COLLECTIONS.USERS,
+      cleanUserId
+    );
+
+    const commentWithUser = {
+      ...response,
+      text: response['comment-text'],
+      created_at: response.$createdAt,
+      user: userResponse
+    };
+
+    return { data: commentWithUser as unknown as DBComment, error: null };
   } catch (error: any) {
     console.error('Error creating comment:', error);
     return { data: null, error: error.message };

@@ -17,11 +17,16 @@ export interface Video {
 }
 
 export interface Comment {
-  id: string;
+  $id?: string;
   userId: string;
   videoId: string;
   text: string;
   created_at: string;
+  user?: {
+    name: string;
+    email?: string;
+    profile_picture?: string;
+  };
 }
 
 export interface Collection {

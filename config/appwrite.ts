@@ -29,7 +29,7 @@ export const COLLECTIONS = {
     VIDEOS: 'videos',
     LIKES: 'likes',
     SAVES: 'saves',
-    COMMENTS: 'comments'
+    COMMENTS: '67a567e5000e8435a75a'
 } as const;
 
 // Collection Types

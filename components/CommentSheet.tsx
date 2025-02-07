@@ -14,7 +14,7 @@ import {
   Keyboard
 } from 'react-native';
 import { Comment } from '@/utils/types';
-import { getComments, createComment } from '@/services/firestore';
+import { getComments, createComment } from '@/services/database';
 import { FontAwesome } from '@expo/vector-icons';
 import { useStore } from '@/store';
 
@@ -75,12 +75,12 @@ export default function CommentSheet({ videoId, isVisible, onClose, onCommentCou
   };
 
   const renderComment = useCallback(({ item }: { item: Comment }) => (
-    <View style={styles.commentContainer} key={item.id}>
+    <View style={styles.commentContainer} key={item.$id}>
       <View style={styles.commentHeader}>
-        <Text style={styles.username}>@{item.user?.username || 'user'}</Text>
+        <Text style={styles.username}>@{item.user?.name || 'user'}</Text>
         <Text style={styles.timestamp}>
-          {item.createdAt?.toDate?.() 
-            ? new Date(item.createdAt.toDate()).toLocaleDateString()
+          {item.created_at
+            ? new Date(item.created_at).toLocaleDateString()
             : 'Just now'}
         </Text>
       </View>
@@ -117,7 +117,7 @@ export default function CommentSheet({ videoId, isVisible, onClose, onCommentCou
       <FlatList
         data={comments}
         renderItem={renderComment}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.$id}
         contentContainerStyle={styles.listContainer}
         removeClippedSubviews={true}
         maxToRenderPerBatch={10}
