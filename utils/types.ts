@@ -14,6 +14,7 @@ export interface Video {
   cuisine_type: 'Italian' | 'Mexican' | 'Chinese' | 'Indian' | 'Japanese' | 'American' | 'Thai' | 'Mediterranean';
   difficulty: 'Easy' | 'Medium' | 'Hard';
   duration: number;
+  description: string;
 }
 
 export interface Comment {
@@ -55,4 +56,5 @@ export interface VideoPost {
   cuisine_type: 'Italian' | 'Mexican' | 'Chinese' | 'Indian' | 'Japanese' | 'American' | 'Thai' | 'Mediterranean';
   difficulty: 'Easy' | 'Medium' | 'Hard';
   duration: number; // in seconds
+  description: string;
 } 

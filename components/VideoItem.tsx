@@ -153,10 +153,10 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
           }
         ]}
       >
-        {/* User Info */}
+        {/* Video Info */}
         <View style={styles.userInfo}>
-          <Text style={styles.username}>@{video.username}</Text>
-          <Text style={styles.caption}>{video.caption}</Text>
+          <Text style={styles.title}>{video.caption}</Text>
+          <Text style={styles.description}>{video.description}</Text>
         </View>
 
         {/* Action Buttons */}
@@ -234,16 +234,16 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     marginBottom: 25,
   },
-  username: {
+  title: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     marginBottom: 10,
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
   },
-  caption: {
+  description: {
     color: 'white',
     fontSize: 14,
     marginBottom: 4,

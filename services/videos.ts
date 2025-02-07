@@ -4,10 +4,24 @@
 import { collection, query, orderBy, limit, getDocs, startAfter, DocumentData, QueryDocumentSnapshot, addDoc } from 'firebase/firestore';
 import { db } from '@/config/firebase';
 */
-import { VideoPost } from '@/types';
-import { getVideos } from '@/services/database';
+import { VideoPost } from '@/utils/types';
+import { databases, DATABASE_ID, COLLECTIONS } from '@/config/appwrite';
+import { Query } from 'react-native-appwrite';
 
-const VIDEOS_PER_BATCH = 5;
+const VIDEOS_PER_BATCH = 10;
+
+interface DBVideo {
+  $id: string;
+  userId: string;
+  username: string;
+  video_url: string;
+  title: string;
+  thumbnail_url: string;
+  cuisine_type: 'Italian' | 'Mexican' | 'Chinese' | 'Indian' | 'Japanese' | 'American' | 'Thai' | 'Mediterranean';
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  duration: number;
+  description: string;
+}
 
 // Sample video data
 const sampleVideos = [
@@ -63,6 +77,29 @@ export const seedVideos = async (): Promise<void> => {
   console.log('Video seeding will be implemented with Appwrite later');
 };
 
+export const getVideos = async (limit: number = VIDEOS_PER_BATCH) => {
+  try {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.VIDEOS,
+      [
+        Query.limit(limit),
+      ]
+    );
+
+    return {
+      data: response.documents as unknown as DBVideo[],
+      error: null
+    };
+  } catch (error) {
+    console.error('Error getting videos:', error);
+    return {
+      data: [],
+      error: 'Failed to fetch videos'
+    };
+  }
+};
+
 export const fetchVideos = async (): Promise<{ videos: VideoPost[]; lastVisible: any }> => {
   try {
     const { data: dbVideos, error } = await getVideos(VIDEOS_PER_BATCH);
@@ -74,9 +111,9 @@ export const fetchVideos = async (): Promise<{ videos: VideoPost[]; lastVisible:
 
     // Map DBVideo format to VideoPost format
     const videos: VideoPost[] = dbVideos.map(video => ({
-      id: video.$id || '',
-      userId: video.userId || 'unknown',
-      username: video.username || 'unknown',
+      id: video.$id,
+      userId: video.userId,
+      username: video.username,
       videoUrl: video.video_url,
       caption: video.title,
       likes: 0, // We'll implement likes later
@@ -86,7 +123,8 @@ export const fetchVideos = async (): Promise<{ videos: VideoPost[]; lastVisible:
       thumbnail_url: video.thumbnail_url,
       cuisine_type: video.cuisine_type,
       difficulty: video.difficulty,
-      duration: video.duration
+      duration: video.duration,
+      description: video.description
     }));
 
     return {
