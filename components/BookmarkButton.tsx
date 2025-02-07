@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { toggleBookmark, hasUserBookmarked } from '@/services/database';
-import { useAuth } from '@/providers/AuthProvider';
+import { useStore } from '@/store';
 
 interface BookmarkButtonProps {
   videoId: string;
@@ -19,19 +19,19 @@ export default function BookmarkButton({
   activeColor = '#FFD700',
   onBookmarkChange,
 }: BookmarkButtonProps) {
-  const { user } = useAuth();
+  const user = useStore((state) => state.user);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     checkBookmarkStatus();
-  }, [videoId, user?.id]);
+  }, [videoId, user?.$id]);
 
   const checkBookmarkStatus = async () => {
-    if (!user?.id) return;
+    if (!user?.$id) return;
     
     try {
-      const hasBookmarked = await hasUserBookmarked(videoId, user.id);
+      const hasBookmarked = await hasUserBookmarked(videoId, user.$id);
       setIsBookmarked(hasBookmarked);
     } catch (error) {
       console.error('Error checking bookmark status:', error);
@@ -41,11 +41,11 @@ export default function BookmarkButton({
   };
 
   const handleToggleBookmark = async () => {
-    if (!user?.id || isLoading) return;
+    if (!user?.$id || isLoading) return;
 
     try {
       setIsLoading(true);
-      const { bookmarked } = await toggleBookmark(videoId, user.id);
+      const { bookmarked } = await toggleBookmark(videoId, user.$id);
       setIsBookmarked(bookmarked);
       onBookmarkChange?.(bookmarked);
     } catch (error) {
@@ -58,7 +58,7 @@ export default function BookmarkButton({
   return (
     <TouchableOpacity
       onPress={handleToggleBookmark}
-      disabled={isLoading || !user?.id}
+      disabled={isLoading || !user?.$id}
       style={styles.button}
     >
       <Ionicons

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { getUserBookmarks } from '@/services/database';
-import { useAuth } from '@/providers/AuthProvider';
+import { useStore } from '@/store';
 import { Video } from '@/utils/types';
 import { Ionicons } from '@expo/vector-icons';
 import { Models } from 'appwrite';
@@ -13,22 +13,22 @@ interface BookmarkedVideo extends Video {
 
 export default function BookmarksScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const user = useStore((state) => state.user);
   const [bookmarks, setBookmarks] = useState<BookmarkedVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.id) {
+    if (user?.$id) {
       loadBookmarks();
     }
-  }, [user?.id]);
+  }, [user?.$id]);
 
   const loadBookmarks = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const { data, error: bookmarkError } = await getUserBookmarks(user!.id);
+      const { data, error: bookmarkError } = await getUserBookmarks(user!.$id);
       
       if (bookmarkError) {
         throw new Error(bookmarkError);
@@ -103,6 +103,13 @@ export default function BookmarksScreen() {
           <Text style={styles.messageText}>
             You haven't bookmarked any videos yet
           </Text>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={20} color="white" />
+            <Text style={styles.backButtonText}>Go Back</Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
@@ -151,6 +158,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     textAlign: 'center',
+    marginBottom: 20,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#333',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  backButtonText: {
+    color: '#fff',
+    marginLeft: 8,
+    fontSize: 16,
   },
   retryButton: {
     marginTop: 16,

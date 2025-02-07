@@ -1,6 +1,6 @@
 import { databases, DATABASE_ID, COLLECTIONS, ID, storage } from '@/config/appwrite';
 import { DBUser, DBVideo, DBComment } from '@/config/appwrite';
-import { Query, ImageGravity } from 'react-native-appwrite';
+import { Query, ImageGravity, Models } from 'react-native-appwrite';
 
 // TODO: Implement these functions using Appwrite databases
 // For now, they return placeholder responses
@@ -384,18 +384,19 @@ export const toggleBookmark = async (videoId: string, userId: string): Promise<{
       );
       return { bookmarked: false };
     } else {
-      // Add bookmark with relationship attributes
+      // Add bookmark with proper relationship format
       await databases.createDocument(
         DATABASE_ID,
         COLLECTIONS.BOOKMARKS,
         ID.unique(),
         {
-          userId,
-          videoId,
-          'created-at': new Date().toISOString(),
+          // Create proper relationship objects for both user and video
+          userId: [`${COLLECTIONS.USERS}/${userId}`],
+          videoId: [`${COLLECTIONS.VIDEOS}/${videoId}`],
+          created_at: new Date().toISOString(),
         }
       );
-      console.log('Created bookmark with userId:', userId, 'videoId:', videoId);
+      console.log('Created bookmark with proper references - userId:', userId, 'videoId:', videoId);
       return { bookmarked: true };
     }
   } catch (error: any) {
@@ -406,12 +407,13 @@ export const toggleBookmark = async (videoId: string, userId: string): Promise<{
 
 export const hasUserBookmarked = async (videoId: string, userId: string): Promise<boolean> => {
   try {
+    // Query using the relationship format
     const response = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.BOOKMARKS,
       [
-        Query.equal('userId', userId),
-        Query.equal('videoId', videoId),
+        Query.equal('userId', [`${COLLECTIONS.USERS}/${userId}`]),
+        Query.equal('videoId', [`${COLLECTIONS.VIDEOS}/${videoId}`])
       ]
     );
     return response.documents.length > 0;
@@ -423,10 +425,11 @@ export const hasUserBookmarked = async (videoId: string, userId: string): Promis
 
 export const getBookmarkCount = async (videoId: string): Promise<number> => {
   try {
+    // Query using the relationship format
     const response = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.BOOKMARKS,
-      [Query.equal('videoId', videoId)]
+      [Query.equal('videoId', [`${COLLECTIONS.VIDEOS}/${videoId}`])]
     );
     return response.total;
   } catch (error: any) {
@@ -438,43 +441,68 @@ export const getBookmarkCount = async (videoId: string): Promise<number> => {
 // New function to get user's bookmarks with video details
 export const getUserBookmarks = async (userId: string) => {
   try {
-    // First, get all bookmarks for the user
+    console.log('Fetching bookmarks for user:', userId);
+    
+    // Get all bookmarks for the user using the relationship format
     const bookmarksResponse = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.BOOKMARKS,
       [
-        Query.equal('userId', userId),
-        Query.orderDesc('created-at')
+        Query.equal('userId', [`${COLLECTIONS.USERS}/${userId}`])
       ]
     );
 
-    // Then fetch video details for each bookmark
-    const bookmarksWithVideos = await Promise.all(
+    console.log('Found bookmarks:', bookmarksResponse.documents.length);
+    
+    if (bookmarksResponse.documents.length === 0) {
+      return { data: [], error: null };
+    }
+
+    // Get all the videos for these bookmarks
+    const bookmarkedVideos = await Promise.all(
       bookmarksResponse.documents.map(async (bookmark) => {
         try {
-          const videoResponse = await databases.getDocument(
+          // Extract video ID from the relationship array
+          const videoIdRef = bookmark.videoId[0]; // Format is "collectionId/documentId"
+          const videoId = videoIdRef.split('/')[1]; // Get just the document ID
+          
+          console.log('Fetching video for bookmark:', {
+            bookmarkId: bookmark.$id,
+            videoIdRef,
+            videoId
+          });
+          
+          const video = await databases.getDocument(
             DATABASE_ID,
             COLLECTIONS.VIDEOS,
-            bookmark.videoId
+            videoId
           );
+
+          console.log('Successfully fetched video:', video.$id);
           
           return {
-            bookmark,
-            video: videoResponse
+            video,
+            bookmark
           };
-        } catch (error) {
-          console.error('Error fetching video for bookmark:', error);
+        } catch (error: any) {
+          console.error('Error fetching video for bookmark:', {
+            bookmarkId: bookmark.$id,
+            error: error.message
+          });
           return null;
         }
       })
     );
 
     // Filter out any null results from failed video fetches
-    const validBookmarks = bookmarksWithVideos.filter(item => item !== null);
+    const validBookmarks = bookmarkedVideos.filter(item => item !== null);
 
-    return { data: validBookmarks, error: null };
+    return {
+      data: validBookmarks,
+      error: null
+    };
   } catch (error: any) {
-    console.error('Error fetching user bookmarks:', error);
+    console.error('Error in getUserBookmarks:', error);
     return { data: null, error: error.message };
   }
 };

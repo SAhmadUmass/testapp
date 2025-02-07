@@ -1,3 +1,9 @@
+/* DEPRECATED: We now use Zustand for user authentication state management.
+   This provider has been replaced by the user state in store/index.ts.
+   Keeping this file commented out for reference in case we need to roll back.
+*/
+
+/*
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { account } from '@/config/appwrite';
 import { Models } from 'appwrite';
@@ -43,4 +49,5 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-} 
+}
+*/ 
