@@ -11,6 +11,7 @@ import CommentSheet from '@/components/CommentSheet';
 import { getLikeCount, getComments, getBookmarkCount, hasUserBookmarked, toggleBookmark } from '@/services/database';
 import { client, COLLECTIONS, DATABASE_ID } from '@/config/appwrite';
 import { Models } from 'appwrite';
+import DescriptionModal from '@/components/DescriptionModal';
 
 interface VideoItemProps {
   video: VideoPost;
@@ -31,6 +32,7 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
   const { user } = useStore();
   const insets = useSafeAreaInsets();
   const { height: WINDOW_HEIGHT, width: WINDOW_WIDTH } = Dimensions.get('window');
+  const [showDescription, setShowDescription] = useState(false);
 
   // Calculate actual screen height (excluding system UI)
   const SCREEN_HEIGHT = WINDOW_HEIGHT - (Platform.OS === 'android' ? 0 : insets.top);
@@ -156,7 +158,11 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
         {/* Video Info */}
         <View style={styles.userInfo}>
           <Text style={styles.title}>{video.caption}</Text>
-          <Text style={styles.description}>{video.description}</Text>
+          <TouchableOpacity onPress={() => setShowDescription(true)}>
+            <Text numberOfLines={2} style={styles.description}>
+              {video.description}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Action Buttons */}
@@ -205,6 +211,13 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
         isVisible={showComments}
         onClose={() => setShowComments(false)}
         onCommentCountChange={setCommentCount}
+      />
+
+      <DescriptionModal
+        isVisible={showDescription}
+        onClose={() => setShowDescription(false)}
+        title={video.caption}
+        description={video.description}
       />
     </View>
   );
