@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LikeButton } from '@/components/LikeButton';
 import CommentSheet from '@/components/CommentSheet';
-import { getLikeCount, getComments } from '@/services/database';
+import { getLikeCount, getComments, getBookmarkCount, hasUserBookmarked, toggleBookmark } from '@/services/database';
 import { client, COLLECTIONS, DATABASE_ID } from '@/config/appwrite';
 import { Models } from 'appwrite';
 
@@ -26,6 +26,9 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
   const [showComments, setShowComments] = useState(false);
   const [commentCount, setCommentCount] = useState(video.comments);
   const [likeCount, setLikeCount] = useState(0);
+  const [bookmarkCount, setBookmarkCount] = useState(0);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const { user } = useStore();
   const insets = useSafeAreaInsets();
   const { height: WINDOW_HEIGHT, width: WINDOW_WIDTH } = Dimensions.get('window');
 
@@ -59,12 +62,21 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
         if (!commentsResult.error) {
           setCommentCount(commentsResult.data.length);
         }
+
+        // Fetch bookmark count and status
+        const bookmarkCount = await getBookmarkCount(video.id);
+        setBookmarkCount(bookmarkCount);
+
+        if (user) {
+          const isBookmarked = await hasUserBookmarked(video.id, user.$id);
+          setIsBookmarked(isBookmarked);
+        }
       } catch (error) {
         console.error('Error fetching counts:', error);
       }
     };
     fetchInitialCounts();
-  }, [video.id]);
+  }, [video.id, user]);
 
   // Subscribe to realtime updates for comments
   useEffect(() => {
@@ -95,6 +107,17 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
       unsubscribe();
     };
   }, [video.id]);
+
+  const handleBookmarkPress = async () => {
+    if (!user) return;
+    try {
+      const result = await toggleBookmark(video.id, user.$id);
+      setIsBookmarked(result.bookmarked);
+      setBookmarkCount(prev => result.bookmarked ? prev + 1 : Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+    }
+  };
 
   return (
     <View 
@@ -160,6 +183,18 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
           <TouchableOpacity style={styles.actionButton}>
             <FontAwesome name="share" size={28} color="white" />
             <Text style={styles.actionText}>Share</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={handleBookmarkPress}
+          >
+            <FontAwesome 
+              name={isBookmarked ? "bookmark" : "bookmark-o"} 
+              size={28} 
+              color="white" 
+            />
+            <Text style={styles.actionText}>{bookmarkCount}</Text>
           </TouchableOpacity>
         </View>
       </LinearGradient>

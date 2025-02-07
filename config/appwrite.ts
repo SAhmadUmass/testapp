@@ -29,7 +29,8 @@ export const COLLECTIONS = {
     VIDEOS: 'videos',
     LIKES: 'likes',
     SAVES: 'saves',
-    COMMENTS: '67a567e5000e8435a75a'
+    COMMENTS: '67a567e5000e8435a75a',
+    BOOKMARKS: 'bookmarks'
 } as const;
 
 // Collection Types
@@ -58,6 +59,21 @@ export interface DBComment {
     userId: string;
     videoId: string;
     text: string;
+    created_at: string;
+}
+
+export interface DBBookmark {
+    $id?: string;
+    userId: {
+        $id: string;
+        $collectionId: string;
+        $databaseId: string;
+    };
+    videoId: {
+        $id: string;
+        $collectionId: string;
+        $databaseId: string;
+    };
     created_at: string;
 }
 

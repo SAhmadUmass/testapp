@@ -361,4 +361,75 @@ export const hasUserLiked = async (videoId: string, userId: string): Promise<boo
         console.error('Error checking if user liked:', error);
         throw error;
     }
+};
+
+export const toggleBookmark = async (videoId: string, userId: string): Promise<{ bookmarked: boolean }> => {
+  try {
+    // Check if bookmark exists
+    const bookmarkExists = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.BOOKMARKS,
+      [
+        Query.equal('userId', userId),
+        Query.equal('videoId', videoId),
+      ]
+    );
+
+    if (bookmarkExists.documents.length > 0) {
+      // Remove bookmark
+      await databases.deleteDocument(
+        DATABASE_ID,
+        COLLECTIONS.BOOKMARKS,
+        bookmarkExists.documents[0].$id
+      );
+      return { bookmarked: false };
+    } else {
+      // Add bookmark
+      await databases.createDocument(
+        DATABASE_ID,
+        COLLECTIONS.BOOKMARKS,
+        ID.unique(),
+        {
+          userId,
+          videoId,
+          created_at: new Date().toISOString(),
+        }
+      );
+      return { bookmarked: true };
+    }
+  } catch (error: any) {
+    console.error('Error toggling bookmark:', error);
+    throw error;
+  }
+};
+
+export const hasUserBookmarked = async (videoId: string, userId: string): Promise<boolean> => {
+  try {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.BOOKMARKS,
+      [
+        Query.equal('userId', userId),
+        Query.equal('videoId', videoId),
+      ]
+    );
+    return response.documents.length > 0;
+  } catch (error: any) {
+    console.error('Error checking bookmark status:', error);
+    return false;
+  }
+};
+
+export const getBookmarkCount = async (videoId: string): Promise<number> => {
+  try {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.BOOKMARKS,
+      [Query.equal('videoId', videoId)]
+    );
+    return response.total;
+  } catch (error: any) {
+    console.error('Error getting bookmark count:', error);
+    return 0;
+  }
 }; 
