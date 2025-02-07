@@ -1,3 +1,13 @@
+/**
+ * @deprecated ⛔️ DEPRECATED - DO NOT USE ⛔️
+ * This file contains legacy Firebase implementation.
+ * We have migrated to Appwrite. Please use the following files instead:
+ * - services/database.ts for database operations
+ * - services/storage.ts for file storage operations
+ * 
+ * @see services/database.ts for the current implementation
+ */
+
 // TODO: This file will be replaced with Appwrite database operations
 // Temporarily commented out while migrating to Appwrite
 

@@ -1,3 +1,12 @@
+/**
+ * @deprecated ⛔️ DEPRECATED - DO NOT USE ⛔️
+ * This script uses legacy Firebase implementation for seeding videos.
+ * We have migrated to Appwrite. Please update this script to use Appwrite
+ * database operations before using it.
+ * 
+ * @see services/database.ts for the current database implementation
+ */
+
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
 

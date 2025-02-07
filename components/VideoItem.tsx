@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LikeButton } from '@/components/LikeButton';
 import CommentSheet from '@/components/CommentSheet';
+import { getLikeCount } from '@/services/database';
 
 interface VideoItemProps {
   video: VideoPost;
@@ -22,7 +23,7 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
   const [status, setStatus] = useState<AVPlaybackStatus>();
   const [showComments, setShowComments] = useState(false);
   const [commentCount, setCommentCount] = useState(video.comments);
-  const [likeCount, setLikeCount] = useState(video.likes);
+  const [likeCount, setLikeCount] = useState(0);
   const insets = useSafeAreaInsets();
   const { height: WINDOW_HEIGHT, width: WINDOW_WIDTH } = Dimensions.get('window');
 
@@ -41,6 +42,20 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
       videoRef.current.setPositionAsync(0);
     }
   }, [isActive]);
+
+  // Fetch initial like count
+  useEffect(() => {
+    const fetchLikeCount = async () => {
+      if (video.isLocal) return;
+      try {
+        const count = await getLikeCount(video.id);
+        setLikeCount(count);
+      } catch (error) {
+        console.error('Error fetching like count:', error);
+      }
+    };
+    fetchLikeCount();
+  }, [video.id]);
 
   return (
     <View 

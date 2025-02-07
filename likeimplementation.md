@@ -1,155 +1,153 @@
-**Below is a step-by-step plan for implementing a “Like” button in a TikTok-style app, broken into atomic tasks and targeted at a junior developer.**  
+Below is a detailed, step‐by‐step plan for a junior developer to add a simple "like" feature to your app. The plan is broken down into atomic steps. Critical files are highlighted, and pseudocode is provided where necessary. Follow each of these steps carefully:
 
 ---
 
-## 1. Identify the Critical Files
+## Step 1: Define the Desired Behavior
 
-1. **services/firestore.ts**  
-   - Contains your helper methods to read, write, or update documents in Firestore.  
-   - You already have a function named “batchUpdateLikes” here.
+1. **User Interaction:**  
+   - When the user taps the like button on a video, the like count should increase (optimistically) in the UI.
+   - Only authenticated users can perform the like action.
+   - (Optional) Prevent the same user from liking a specific video more than once. For now, you can assume a simple implementation where each tap increments the count.
 
-2. **store/index.ts** (or your chosen global state)  
-   - Stores global app data (e.g., videos array).  
-   - May hold actions to update like counts locally for faster UI responses.
-
-3. **components/VideoItem.tsx** (or a similar file)  
-   - Renders each video and includes on-screen controls.  
-   - A logical place to show a “Like” button that triggers the update.
-
-4. **app/(tabs)/index.tsx** (FeedScreen)  
-   - Lists or pages through multiple videos.  
-   - Could propagate the user’s click event or pass down props to VideoItem.
+2. **Backend Operation:**  
+   - Update the like count of the video in the backend.
+   - Create a record in the “likes” collection to represent the relationship between the user and the video (if needed for preventing duplicates later).
 
 ---
 
-## 2. Set Up Your Firestore Update Logic
+## Step 2: Identify Critical Files
 
-1. **Confirm “batchUpdateLikes”**  
-   - In services/firestore.ts, verify the function “batchUpdateLikes(videoId, shouldIncrement)” is ready.  
-   - This function updates the “likes” field in the specified video document in Firestore.
+1. **`services/firestore.ts` (or your Appwrite replacement service file):**  
+   - This file holds functions that interact with your database.
+   - A function like `batchUpdateLikes` should be created or expanded to update the like count for a video.
 
-2. **Optionally Add a Helper**  
-   - If you want simpler syntax in your component, create a short helper method:  
+2. **`components/LikeButton.tsx`:**  
+   - This component represents the UI button for liking a video.
+   - It should receive the video data and a callback to update the local like count.
+
+3. **`components/VideoItem.tsx`:**  
+   - This component renders each video in the feed.
+   - It should include the LikeButton and handle the state for the like count on that video.
+
+4. **`store/index.ts` (if using Zustand for global state):**  
+   - Although not critical for a minimal implementation, you may eventually want to update the global state when a like is added or removed.
+
+---
+
+## Step 3: Backend Update Flow (in *services/firestore.ts*)
+
+1. **Create or Update the Likes-update Function:**
+
+   - **Purpose:**  
+     Accept a video ID, user ID, and a flag (e.g., `shouldIncrement`) to indicate whether the like is being added or removed.
+
+   - **Steps in Pseudocode:**
+     ```plaintext
+     FUNCTION batchUpdateLikes(videoId, userId, shouldIncrement):
+         IF userId is missing:
+             RETURN error "User not authenticated"
+
+         TRY:
+             IF shouldIncrement:
+                 // Optionally check if user already liked the video
+                 // Create a new like record in the “likes” collection (if needed)
+                 // Perform a database update to increment the likes count on the video document
+             ELSE:
+                 // For unliking, delete the like record and decrement the counter
+             RETURN success indicator
+         CATCH error:
+             RETURN error with error message
      ```
-     function likeVideo(videoId) {
-       return batchUpdateLikes(videoId, true)
-     }
 
-     function unlikeVideo(videoId) {
-       return batchUpdateLikes(videoId, false)
-     }
-     ```
-   - This can wrap or simplify calls for your react components (pseudocode, no line numbers).
+2. **Critical Considerations:**
+   - **Error Handling:** Ensure you capture database errors and return an error value.
+   - **Optimistic Updating:** Even if the backend update is asynchronous, return promptly so the UI can respond immediately (and possibly roll back on error).
 
 ---
 
-## 3. Design the “Like” Button UI
+## Step 4: Create or Update the Like Button Component (in *components/LikeButton.tsx*)
 
-1. **Create a Dedicated Component** (optional)  
-   - You might have a file named LikeButton.tsx. You pass it the current video and a method to update likes.  
-   - It can internally manage its own state or rely on global state.
+1. **Component Responsibilities:**
+   - Display the like count (or an icon with the like number).
+   - Handle tap events.
+   - Call the backend function (`batchUpdateLikes`) when the user likes a video.
+   - Optionally adjust the UI state optimistically before receiving a response.
 
-2. **Props Definition**  
-   - Typically, you need:  
-     - The video’s ID (to tell Firestore which document to update).  
-     - The current like count (so you can display it).  
-     - An “onLikePress” callback that triggers the Firestore update.
+2. **Essential Logic Using Pseudocode:**
+   ```plaintext
+   ON likeButton PRESS:
+       IF user is not authenticated:
+           // Optionally show an error message or login prompt
+           RETURN
 
-3. **Styling & Icons**  
-   - Use a heart icon or a thumb icon.  
-   - Try a small red heart with a numeric label next to it.
+       SET optimisticNewCount = current like count + 1
+       CALL onLikeCountChange(optimisticNewCount) to update UI immediately
 
----
+       CALL batchUpdateLikes(video.id, user.id, true)
 
-## 4. Wire Up the Firestore Update
+       IF backend update returns error:
+           // Revert the optimistic UI update
+           CALL onLikeCountChange(current like count)
+           LOG error message (or display a feedback message)
+   ```
 
-1. **Handle User Interaction**  
-   - When the user taps the “Like” button, call “batchUpdateLikes” with `shouldIncrement` set to true or false depending on your logic.
-
-2. **Optimistic Update**  
-   - Immediately increase/decrease the local like count (in state or store) to make the UI feel snappy.  
-   - If Firestore returns an error, you can revert the count.
-
-3. **Global State Update (store/index.ts)**  
-   - After calling “batchUpdateLikes,” update your local “videos” array.  
-   - For instance, find the matching video in the array and increment its “likes” field.  
-
----
-
-## 5. Integrate with the Video Feed
-
-1. **Passing the Data**  
-   - In app/(tabs)/index.tsx (or wherever the feed is), pass the “video” object to VideoItem.  
-   - Include the function or callback to handle likes (which calls Firestore).
-
-2. **Rendering the Button**  
-   - Inside VideoItem, place the LikeButton (or a simple button) in an overlay or bottom toolbar.  
-   - Ensure it receives the video’s current like count and ID.
-
-3. **Confirm It Works for Each Video**  
-   - Scroll through the feed and test that each button triggers an update in Firestore.  
-   - The updated “likes” count should show up if you fetch the document again.
+3. **Required Props:**
+   - `video`: The video object that contains the current like count.
+   - `onLikeCountChange`: A callback function that updates the like count locally in the parent component.
 
 ---
 
-## 6. Testing & Verification
+## Step 5: Integrate the Like Button into the Video Feed (in *components/VideoItem.tsx*)
 
-1. **Real-Time Sync**  
-   - If you have real-time listeners on your “videos” collection (not shown here, but possible), watch for immediate changes to the “likes” field.  
-   - Alternatively, rely on the next fetch to reflect changes.
+1. **Render the Like Button within the VideoItem:**
+   - Ensure that the VideoItem component, which displays the video content, also includes the LikeButton.
+   - Pass the video’s current like count and a handler to update it as props.
 
-2. **Error Handling**  
-   - If Firestore update fails, show a small message (“Error liking this video”).  
-   - Consider a retry mechanism or revert the like count.
-
-3. **Anonymous vs. Authenticated**  
-   - Decide if only logged-in users can like videos. If so, ensure you check user authentication status before calling your update function.
-
----
-
-## 7. Extra Considerations
-1. **Prevent Double-Liking**  
-   - You might only want a user to like each video once. This can involve storing user-video relationships in a separate collection or toggling the like state.
-
-2. **UI Feedback**  
-   - A short animation or a highlighted icon can show that the like was successful.
-
-3. **Performance**  
-   - For large-scale apps, repeated writes can be expensive. If you anticipate high traffic, consider batching or limiting user interactions (like a rate limit or a double-tap threshold).
+2. **Steps for Integration:**
+   - **Local State:**  
+     Create local state in VideoItem for the like count (if not already managed globally).
+   - **Pass Props:**  
+     Pass down the video (with the current like count) and a setter function (or callback) to update the like count when a like occurs.
+   - **UI Consideration:**  
+     The LikeButton should be positioned alongside other actions (e.g., comments, sharing) displayed over the video.
 
 ---
 
-**Conclusion**  
-Implementing likes in your TikTok-style app involves a few clear steps: setting the Firestore update function (batchUpdateLikes), creating a like button UI, handling user input with optional optimistic updates, and verifying that your Firestore documents receive new like counts. By keeping each step atomic (read Firestore, create a separate button component, handle local state updates, etc.), you ensure it’s easy to debug and expand later with additional features like removing likes or preventing double-likes.
+## Step 6: (Optional) Update Global State if Needed
 
+1. **When using Zustand:**
+   - If you currently manage videos in a global store, ensure that an updated like count is reflected across your app.
+   - You may add additional logic to update the global state inside the LikeButton’s callback or within VideoItem after a successful backend update.
 
-import React from 'react';
-import { TouchableOpacity, Text } from 'react-native';
-import { batchUpdateLikes } from '@/services/firestore';
-import { Video } from '@/utils/types';
+---
 
-interface LikeButtonProps {
-  video: Video; 
-  updateLocalLikes: (newLikes: number) => void;
-}
+## Step 7: Test and Verify the Implementation
 
-export function LikeButton({ video, updateLocalLikes }: LikeButtonProps) {
-  const handleLikePress = async () => {
-    // Decide whether this is an increment or decrement
-    const shouldIncrement = true; // or dynamically determine this
-    const response = await batchUpdateLikes(video.id, shouldIncrement);
+1. **Local Testing:**
+   - Run the app in development mode.
+   - Tap the like button on a video and verify that the UI updates immediately (optimistic update).
+   - Confirm that the updated like count is synced with the backend by checking your Appwrite dashboard (or your database if using another backend).
 
-    if (!response.error) {
-      const newLikesCount = shouldIncrement ? video.likes + 1 : video.likes - 1;
-      updateLocalLikes(newLikesCount);
-    } else {
-      console.error('Error updating likes:', response.error);
-    }
-  };
+2. **Error Handling Testing:**
+   - Simulate backend failures (by disconnecting the network or making the function return an error) and ensure that the UI reverts the changes and displays an error message if needed.
 
-  return (
-    <TouchableOpacity onPress={handleLikePress}>
-      <Text>Like ({video.likes})</Text>
-    </TouchableOpacity>
-  );
-}
+3. **Edge Cases:**
+   - Test that only authenticated users can like videos. If the user is not logged in, the like action should be ignored or prompt a sign-in flow.
+   - Verify that the like count remains consistent when multiple users like the same video.
+
+---
+
+## Step 8: Document and Iterate
+
+1. **Documentation:**
+   - Update project documentation or technical notes to reflect how likes are implemented.
+   - Clearly document the responsibilities of each critical file and function.
+
+2. **Future Considerations:**
+   - Consider adding functionality to unlike videos.
+   - Implement measures to prevent double-liking by storing user-video relationships persistently.
+   - Explore animations or a visual state change (e.g., toggling a heart icon) for improved user feedback.
+
+---
+
+Following this plan, a junior developer should have a clear roadmap for implementing a simple like feature in the app. Each step has been broken down into atomic parts, and the critical files are identified along with technical details to guide the implementation process.

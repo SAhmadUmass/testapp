@@ -1,3 +1,12 @@
+/**
+ * @deprecated ⛔️ DEPRECATED - DO NOT USE ⛔️
+ * This file contains legacy Firebase configuration.
+ * We have migrated to Appwrite. Please use the following files instead:
+ * - config/appwrite.ts for Appwrite configuration
+ * 
+ * @see config/appwrite.ts for the current implementation
+ */
+
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';

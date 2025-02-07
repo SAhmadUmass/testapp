@@ -227,4 +227,76 @@ export const createComment = async (videoId: string, userId: string, text: strin
     console.error('Error creating comment:', error);
     return { data: null, error: error.message };
   }
+};
+
+// Like-related functions
+export const toggleLike = async (videoId: string, userId: string): Promise<{ liked: boolean }> => {
+    try {
+        // Check if like already exists
+        const likes = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTIONS.LIKES,
+            [
+                Query.equal('videoId', videoId),
+                Query.equal('userId', userId)
+            ]
+        );
+
+        if (likes.documents.length > 0) {
+            // Unlike: Delete the existing like
+            await databases.deleteDocument(
+                DATABASE_ID,
+                COLLECTIONS.LIKES,
+                likes.documents[0].$id
+            );
+            return { liked: false };
+        } else {
+            // Like: Create a new like document
+            await databases.createDocument(
+                DATABASE_ID,
+                COLLECTIONS.LIKES,
+                ID.unique(),
+                {
+                    videoId,
+                    userId,
+                    'created-at': new Date().toISOString(),
+                }
+            );
+            return { liked: true };
+        }
+    } catch (error) {
+        console.error('Error toggling like:', error);
+        throw error;
+    }
+};
+
+export const getLikeCount = async (videoId: string): Promise<number> => {
+    try {
+        const likes = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTIONS.LIKES,
+            [Query.equal('videoId', videoId)]
+        );
+        return likes.total;
+    } catch (error) {
+        console.error('Error getting like count:', error);
+        throw error;
+    }
+};
+
+export const hasUserLiked = async (videoId: string, userId: string): Promise<boolean> => {
+    try {
+        const likes = await databases.listDocuments(
+            DATABASE_ID,
+            COLLECTIONS.LIKES,
+            [
+                Query.equal('videoId', videoId),
+                Query.equal('userId', userId)
+            ]
+        );
+        return likes.total > 0;
+    } catch (error) {
+        console.error('Error checking if user liked:', error);
+        throw error;
+    }
 }; 

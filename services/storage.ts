@@ -1,3 +1,12 @@
+/**
+ * @deprecated ⛔️ DEPRECATED - DO NOT USE ⛔️
+ * This file contains legacy Firebase Storage implementation.
+ * We have migrated to Appwrite. Please use the following files instead:
+ * - config/appwrite.ts for storage operations
+ * 
+ * @see config/appwrite.ts for the current implementation
+ */
+
 import {
   ref,
   uploadBytesResumable,
