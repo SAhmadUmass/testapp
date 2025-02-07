@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Platform, Alert } from 'react-native';
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { FontAwesome } from '@expo/vector-icons';
 import { useStore } from '@/store';
@@ -12,6 +12,7 @@ import { getLikeCount, getComments, getBookmarkCount, hasUserBookmarked, toggleB
 import { client, COLLECTIONS, DATABASE_ID } from '@/config/appwrite';
 import { Models } from 'appwrite';
 import DescriptionModal from '@/components/DescriptionModal';
+import * as Sharing from 'expo-sharing';
 
 interface VideoItemProps {
   video: VideoPost;
@@ -121,6 +122,34 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
     }
   };
 
+  const handleShare = async () => {
+    try {
+      // For local videos, we can't share them directly
+      if (video.isLocal) {
+        Alert.alert('Cannot share', 'This video is not available for sharing.');
+        return;
+      }
+
+      // Check if sharing is available on this platform
+      const isAvailable = await Sharing.isAvailableAsync();
+      
+      if (!isAvailable) {
+        Alert.alert('Error', 'Sharing is not available on this device');
+        return;
+      }
+
+      // Share the video URL and caption
+      await Sharing.shareAsync(video.videoUrl as string, {
+        dialogTitle: video.caption,
+        mimeType: 'video/mp4',
+        UTI: 'public.movie' // for iOS
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
+      Alert.alert('Error', 'Could not share the video. Please try again.');
+    }
+  };
+
   return (
     <View 
       style={[
@@ -186,7 +215,10 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
             <Text style={styles.actionText}>{commentCount}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton}>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={handleShare}
+          >
             <FontAwesome name="share" size={28} color="white" />
             <Text style={styles.actionText}>Share</Text>
           </TouchableOpacity>
