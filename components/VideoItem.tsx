@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Platform } from '
 import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
 import { FontAwesome } from '@expo/vector-icons';
 import { useStore } from '@/store';
-import { VideoPost } from '@/types';
+import { VideoPost } from '@/utils/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LikeButton } from '@/components/LikeButton';

@@ -8,7 +8,7 @@ We're switching from Firebase to Appwrite.
 - We use Expo for app development
 - We use expo-router for navigation
 - We use zustand for state management
-- We use nativewind for styling
+- We use stylesheets for styling
 
 ## Babel Configuration (Expo SDK 52+)
 
