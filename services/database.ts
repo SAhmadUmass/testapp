@@ -391,9 +391,9 @@ export const toggleBookmark = async (videoId: string, userId: string): Promise<{
         ID.unique(),
         {
           // Create proper relationship objects for both user and video
-          userId: [`${COLLECTIONS.USERS}/${userId}`],
-          videoId: [`${COLLECTIONS.VIDEOS}/${videoId}`],
-          created_at: new Date().toISOString(),
+          userId: userId,
+          videoId: videoId,
+          'created-at': new Date().toISOString(),
         }
       );
       console.log('Created bookmark with proper references - userId:', userId, 'videoId:', videoId);
@@ -407,13 +407,13 @@ export const toggleBookmark = async (videoId: string, userId: string): Promise<{
 
 export const hasUserBookmarked = async (videoId: string, userId: string): Promise<boolean> => {
   try {
-    // Query using the relationship format
+    // Query using direct IDs
     const response = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.BOOKMARKS,
       [
-        Query.equal('userId', [`${COLLECTIONS.USERS}/${userId}`]),
-        Query.equal('videoId', [`${COLLECTIONS.VIDEOS}/${videoId}`])
+        Query.equal('userId', userId),
+        Query.equal('videoId', videoId)
       ]
     );
     return response.documents.length > 0;
@@ -425,11 +425,11 @@ export const hasUserBookmarked = async (videoId: string, userId: string): Promis
 
 export const getBookmarkCount = async (videoId: string): Promise<number> => {
   try {
-    // Query using the relationship format
+    // Query using direct ID
     const response = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.BOOKMARKS,
-      [Query.equal('videoId', [`${COLLECTIONS.VIDEOS}/${videoId}`])]
+      [Query.equal('videoId', videoId)]
     );
     return response.total;
   } catch (error: any) {
@@ -443,12 +443,12 @@ export const getUserBookmarks = async (userId: string) => {
   try {
     console.log('Fetching bookmarks for user:', userId);
     
-    // Get all bookmarks for the user using the relationship format
+    // Get all bookmarks for the user using direct ID
     const bookmarksResponse = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.BOOKMARKS,
       [
-        Query.equal('userId', [`${COLLECTIONS.USERS}/${userId}`])
+        Query.equal('userId', userId)
       ]
     );
 
@@ -462,13 +462,11 @@ export const getUserBookmarks = async (userId: string) => {
     const bookmarkedVideos = await Promise.all(
       bookmarksResponse.documents.map(async (bookmark) => {
         try {
-          // Extract video ID from the relationship array
-          const videoIdRef = bookmark.videoId[0]; // Format is "collectionId/documentId"
-          const videoId = videoIdRef.split('/')[1]; // Get just the document ID
+          // Extract the video ID from the videoId object
+          const videoId = typeof bookmark.videoId === 'object' ? bookmark.videoId.$id : bookmark.videoId;
           
           console.log('Fetching video for bookmark:', {
             bookmarkId: bookmark.$id,
-            videoIdRef,
             videoId
           });
           
@@ -518,5 +516,32 @@ export const getVideo = async (videoId: string) => {
   } catch (error: any) {
     console.error('Error fetching video:', error);
     return { data: null, error: error.message };
+  }
+};
+
+export const clearAllBookmarks = async (userId: string) => {
+  try {
+    // Get all bookmarks for the user
+    const bookmarksResponse = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.BOOKMARKS,
+      [Query.equal('userId', userId)]
+    );
+
+    // Delete all bookmarks
+    await Promise.all(
+      bookmarksResponse.documents.map(bookmark =>
+        databases.deleteDocument(
+          DATABASE_ID,
+          COLLECTIONS.BOOKMARKS,
+          bookmark.$id
+        )
+      )
+    );
+
+    return { error: null };
+  } catch (error: any) {
+    console.error('Error clearing bookmarks:', error);
+    return { error: error.message };
   }
 }; 
