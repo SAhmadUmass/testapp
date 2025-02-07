@@ -4,6 +4,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppwriteUser } from '@/services/auth';
 import { VideoPost } from '@/types';
 
+export const CUISINE_TYPES = [
+  'Italian',
+  'Mexican',
+  'Chinese',
+  'Indian',
+  'Japanese',
+  'American',
+  'Thai',
+  'Mediterranean'
+] as const;
+
+export const DIFFICULTY_LEVELS = [
+  'Easy',
+  'Medium',
+  'Hard'
+] as const;
+
+export type CuisineType = typeof CUISINE_TYPES[number];
+export type DifficultyLevel = typeof DIFFICULTY_LEVELS[number];
+
 interface AppState {
   // Auth State
   user: AppwriteUser | null;
@@ -14,6 +34,12 @@ interface AppState {
   setVideos: (videos: VideoPost[]) => void;
   currentVideo: VideoPost | null;
   setCurrentVideo: (video: VideoPost | null) => void;
+  
+  // Filter State
+  selectedCuisines: CuisineType[];
+  selectedDifficulties: DifficultyLevel[];
+  setFilters: (cuisines: CuisineType[], difficulties: DifficultyLevel[]) => void;
+  clearFilters: () => void;
   
   // Loading States
   isLoading: boolean;
@@ -41,6 +67,18 @@ export const useStore = create<AppState>()(
       currentVideo: null,
       setCurrentVideo: (video) => set({ currentVideo: video }),
       
+      // Filter State
+      selectedCuisines: [],
+      selectedDifficulties: [],
+      setFilters: (cuisines, difficulties) => set({ 
+        selectedCuisines: cuisines,
+        selectedDifficulties: difficulties 
+      }),
+      clearFilters: () => set({ 
+        selectedCuisines: [], 
+        selectedDifficulties: [] 
+      }),
+      
       // Loading States
       isLoading: false,
       setIsLoading: (loading) => set({ isLoading: loading }),
@@ -59,7 +97,9 @@ export const useStore = create<AppState>()(
       partialize: (state) => ({
         user: state.user,
         videos: state.videos,
-        currentVideo: state.currentVideo
+        currentVideo: state.currentVideo,
+        selectedCuisines: state.selectedCuisines,
+        selectedDifficulties: state.selectedDifficulties
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {

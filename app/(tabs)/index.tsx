@@ -1,15 +1,19 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
-import { View, FlatList, StyleSheet, ViewToken, ViewabilityConfig, ActivityIndicator, Dimensions, Platform } from 'react-native';
+import { View, FlatList, StyleSheet, ViewToken, ViewabilityConfig, ActivityIndicator, Dimensions, Platform, Pressable } from 'react-native';
 import { useStore } from '@/store';
 import VideoItem from '@/components/VideoItem';
 import { VideoPost } from '@/types';
 import { fetchVideos } from '@/services/videos';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { FilterModal } from '@/components/FilterModal';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '@/constants/theme';
 
 export default function FeedScreen() {
-  const { videos, setVideos } = useStore();
+  const { videos, setVideos, selectedCuisines, selectedDifficulties } = useStore();
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFilterVisible, setIsFilterVisible] = useState(false);
   const insets = useSafeAreaInsets();
   const { height: WINDOW_HEIGHT, width: WINDOW_WIDTH } = Dimensions.get('window');
   const flatListRef = useRef<FlatList>(null);
@@ -20,14 +24,21 @@ export default function FeedScreen() {
   // Fetch initial videos
   useEffect(() => {
     loadVideos();
-  }, []);
+  }, [selectedCuisines, selectedDifficulties]); // Reload when filters change
 
   // Load videos function
   const loadVideos = async () => {
     if (isLoading) return;
     
     setIsLoading(true);
-    const { videos: newVideos } = await fetchVideos();
+    const { videos: newVideos } = await fetchVideos(
+      selectedCuisines.length > 0 || selectedDifficulties.length > 0
+        ? {
+            cuisineTypes: selectedCuisines,
+            difficultyLevels: selectedDifficulties
+          }
+        : undefined
+    );
     setVideos(newVideos);
     setIsLoading(false);
   };
@@ -98,6 +109,27 @@ export default function FeedScreen() {
         windowSize={3}
         removeClippedSubviews={Platform.OS === 'android'}
       />
+
+      {/* Filter Button */}
+      <Pressable 
+        style={[
+          styles.filterButton,
+          { top: insets.top + 8 } // Position below status bar
+        ]}
+        onPress={() => setIsFilterVisible(true)}
+      >
+        <Ionicons 
+          name="filter" 
+          size={24} 
+          color={COLORS.black} // Dark icon on light background
+        />
+      </Pressable>
+
+      {/* Filter Modal */}
+      <FilterModal
+        visible={isFilterVisible}
+        onClose={() => setIsFilterVisible(false)}
+      />
     </View>
   );
 }
@@ -111,5 +143,24 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  filterButton: {
+    position: 'absolute',
+    right: 16,
+    width: 44, // Slightly smaller for top placement
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    zIndex: 1, // Ensure it stays above videos
   },
 });

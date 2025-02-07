@@ -2,61 +2,61 @@
 
 ## Level 1 - Core Features:
 
-- [ ] **"I want to watch videos without an account"**
-  - Firebase Storage (video hosting)
-  - Firestore (video metadata) #done
+- [x] **"I want to watch videos with an account"**
+  - Appwrite Storage (video hosting)
+  - Appwrite Database (video metadata) #done
 
 - [x] **"I want to create an account"**
-  - Firebase Authentication
-  - Firestore (user profiles)
+  - Appwrite Authentication
+  - Appwrite Database (user profiles)
 
-- [ ] **"I want to scroll through a feed"**
-  - Firestore (feed data) #done
-  - Firebase Storage (video content) #almost done
+- [x] **"I want to scroll through a feed"**
+  - Appwrite Database (feed data) #done
+  - Appwrite Storage (video content) #done
 
 - [x] **"I want to like a video"**
-  - Firestore (like counters, user-video relationships)
+  - Appwrite Database (like counters, user-video relationships)
 
 ## Level 2 - Basic Engagement:
 
-- [ ] **"I want to save a video"**
-  - Firestore (saved videos collection)
+- [x] **"I want to save a video"**
+  - Appwrite Database (saved videos collection)
 
 - [x] **"I want to leave comments"**
-  - Firestore (comments collection)
+  - Appwrite Database (comments collection)
 
-- [ ] **"I want to share a video"**
-  - Firebase Dynamic Links
+- [x] **"I want to share a video"**
+  - Appwrite Functions (for generating share links)
 
 - [ ] **"I want to follow creators"**
-  - Firestore (user relationships)
+  - Appwrite Database (user relationships)
 
 ## Level 3 - Organization:
 
 - [ ] **"I want to view my saved videos"**
-  - Firestore (queries on saved collection)
+  - Appwrite Database (queries on saved collection)
 
 - [ ] **"I want to create a category for saved videos"**
-  - Firestore (categories collection)
+  - Appwrite Database (categories collection)
 
 - [ ] **"I want to move videos between categories"**
-  - Firestore (updates to video-category relationships)
+  - Appwrite Database (updates to video-category relationships)
 
 - [ ] **"I want to search within my saved videos"**
-  - Firestore (queries with filters)
+  - Appwrite Database (queries with filters)
 
 Level 4 - Advanced Features:
 - "I want to tip creators"
-  - Firebase Functions (payment processing)
-  - Firestore (transaction records)
+  - Appwrite Functions (payment processing)
+  - Appwrite Database (transaction records)
 - "I want to report content"
-  - Firestore (reports collection)
-  - Firebase Functions (moderation)
+  - Appwrite Database (reports collection)
+  - Appwrite Functions (moderation)
 - "I want to create custom playlists"
-  - Firestore (playlists collection)
+  - Appwrite Database (playlists collection)
 - "I want to share my collections"
-  - Firebase Dynamic Links
-  - Firestore (shared collection data)
+  - Appwrite Functions (for generating share links)
+  - Appwrite Database (shared collection data)
 
-Want to see the Firestore data structure for Level 1?
+Want to see the Appwrite Database structure for Level 1?
 - "I want to share my collections"

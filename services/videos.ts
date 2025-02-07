@@ -17,7 +17,7 @@ interface DBVideo {
   video_url: string;
   title: string;
   thumbnail_url: string;
-  cuisine_type: 'Italian' | 'Mexican' | 'Chinese' | 'Indian' | 'Japanese' | 'American' | 'Thai' | 'Mediterranean';
+  'cuisine-type': 'Italian' | 'Mexican' | 'Chinese' | 'Indian' | 'Japanese' | 'American' | 'Thai' | 'Mediterranean';
   difficulty: 'Easy' | 'Medium' | 'Hard';
   duration: number;
   description: string;
@@ -77,14 +77,34 @@ export const seedVideos = async (): Promise<void> => {
   console.log('Video seeding will be implemented with Appwrite later');
 };
 
-export const getVideos = async (limit: number = VIDEOS_PER_BATCH) => {
+interface FetchVideosParams {
+  cuisineTypes?: string[];
+  difficultyLevels?: string[];
+  limit?: number;
+}
+
+export const getVideos = async ({ 
+  limit = VIDEOS_PER_BATCH,
+  cuisineTypes = [],
+  difficultyLevels = []
+}: FetchVideosParams = {}) => {
   try {
+    const queries = [Query.limit(limit)];
+
+    // Add cuisine type filter if specified
+    if (cuisineTypes.length > 0) {
+      queries.push(Query.equal('cuisine-type', cuisineTypes));
+    }
+
+    // Add difficulty filter if specified
+    if (difficultyLevels.length > 0) {
+      queries.push(Query.equal('difficulty', difficultyLevels));
+    }
+
     const response = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.VIDEOS,
-      [
-        Query.limit(limit),
-      ]
+      queries
     );
 
     return {
@@ -100,9 +120,9 @@ export const getVideos = async (limit: number = VIDEOS_PER_BATCH) => {
   }
 };
 
-export const fetchVideos = async (): Promise<{ videos: VideoPost[]; lastVisible: any }> => {
+export const fetchVideos = async (params?: FetchVideosParams): Promise<{ videos: VideoPost[]; lastVisible: any }> => {
   try {
-    const { data: dbVideos, error } = await getVideos(VIDEOS_PER_BATCH);
+    const { data: dbVideos, error } = await getVideos(params);
     
     if (error) {
       console.error('Error fetching videos:', error);
@@ -121,7 +141,7 @@ export const fetchVideos = async (): Promise<{ videos: VideoPost[]; lastVisible:
       createdAt: new Date(),
       isLocal: false,
       thumbnail_url: video.thumbnail_url,
-      cuisine_type: video.cuisine_type,
+      cuisine_type: video['cuisine-type'],
       difficulty: video.difficulty,
       duration: video.duration,
       description: video.description
