@@ -5,6 +5,7 @@ import { collection, query, orderBy, limit, getDocs, startAfter, DocumentData, Q
 import { db } from '@/config/firebase';
 */
 import { VideoPost } from '@/types';
+import { getVideos } from '@/services/database';
 
 const VIDEOS_PER_BATCH = 5;
 
@@ -59,13 +60,41 @@ const sampleVideos = [
 
 // Temporary mock implementations
 export const seedVideos = async (): Promise<void> => {
-  console.log('Video seeding disabled while migrating to Appwrite');
+  console.log('Video seeding will be implemented with Appwrite later');
 };
 
 export const fetchVideos = async (): Promise<{ videos: VideoPost[]; lastVisible: any }> => {
-  // Return sample videos for now
-  return {
-    videos: sampleVideos as VideoPost[],
-    lastVisible: undefined
-  };
+  try {
+    const { data: dbVideos, error } = await getVideos(VIDEOS_PER_BATCH);
+    
+    if (error) {
+      console.error('Error fetching videos:', error);
+      return { videos: [], lastVisible: null };
+    }
+
+    // Map DBVideo format to VideoPost format
+    const videos: VideoPost[] = dbVideos.map(video => ({
+      id: video.$id || '',
+      userId: video.userId || 'unknown',
+      username: video.username || 'unknown',
+      videoUrl: video.video_url,
+      caption: video.title,
+      likes: 0, // We'll implement likes later
+      comments: 0, // We'll implement comments later
+      createdAt: new Date(),
+      isLocal: false,
+      thumbnail_url: video.thumbnail_url,
+      cuisine_type: video.cuisine_type,
+      difficulty: video.difficulty,
+      duration: video.duration
+    }));
+
+    return {
+      videos,
+      lastVisible: null // We'll implement pagination later
+    };
+  } catch (error) {
+    console.error('Error in fetchVideos:', error);
+    return { videos: [], lastVisible: null };
+  }
 }; 

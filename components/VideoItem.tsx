@@ -15,7 +15,7 @@ interface VideoItemProps {
   isFirst?: boolean;
 }
 
-const DEFAULT_TAB_BAR_HEIGHT = 49; // Default height for both iOS and Android
+const DEFAULT_TAB_BAR_HEIGHT = 49;
 
 export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) {
   const videoRef = useRef<Video>(null);
@@ -26,17 +26,19 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
   const insets = useSafeAreaInsets();
   const { height: WINDOW_HEIGHT, width: WINDOW_WIDTH } = Dimensions.get('window');
 
-  // Calculate dimensions
+  // Calculate actual screen height (excluding system UI)
+  const SCREEN_HEIGHT = WINDOW_HEIGHT - (Platform.OS === 'android' ? 0 : insets.top);
   const TAB_BAR_HEIGHT = Platform.select({ ios: DEFAULT_TAB_BAR_HEIGHT, android: DEFAULT_TAB_BAR_HEIGHT }) ?? DEFAULT_TAB_BAR_HEIGHT;
   
   // Handle video playback based on visibility
-  React.useEffect(() => {
+  useEffect(() => {
     if (!videoRef.current) return;
     
     if (isActive) {
       videoRef.current.playAsync();
     } else {
       videoRef.current.pauseAsync();
+      videoRef.current.setPositionAsync(0);
     }
   }, [isActive]);
 
@@ -45,7 +47,7 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
       style={[
         styles.container, 
         { 
-          height: WINDOW_HEIGHT,
+          height: SCREEN_HEIGHT,
           width: WINDOW_WIDTH,
           marginTop: isFirst ? -insets.top : 0,
         }
@@ -54,12 +56,13 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
     >
       <Video
         ref={videoRef}
-        style={styles.video}
+        style={[styles.video, { height: SCREEN_HEIGHT }]}
         source={video.isLocal ? video.videoUrl as number : { uri: video.videoUrl as string }}
         resizeMode={ResizeMode.COVER}
         isLooping
         shouldPlay={isActive}
         onPlaybackStatusUpdate={status => setStatus(status)}
+        isMuted={false}
       />
       
       {/* Overlay Content */}
@@ -69,13 +72,14 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
           styles.overlay,
           {
             paddingTop: isFirst ? 0 : insets.top,
+            paddingBottom: TAB_BAR_HEIGHT + insets.bottom,
           }
         ]}
       >
         {/* User Info */}
-        <View style={[styles.userInfo, { marginBottom: TAB_BAR_HEIGHT + insets.bottom + 6 }] }>
+        <View style={styles.userInfo}>
           <Text style={styles.username}>@{video.username}</Text>
-          <Text style={[styles.caption, { marginBottom: TAB_BAR_HEIGHT + insets.bottom + 6 }]}>{video.caption}</Text>
+          <Text style={styles.caption}>{video.caption}</Text>
         </View>
 
         {/* Action Buttons */}
@@ -119,7 +123,7 @@ export default function VideoItem({ video, isActive, isFirst }: VideoItemProps) 
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'black',
+    backgroundColor: '#000',
     position: 'relative',
   },
   video: {
@@ -133,18 +137,19 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     padding: 20,
+    paddingBottom: 12,
     justifyContent: 'space-between',
   },
   userInfo: {
     flex: 1,
     justifyContent: 'flex-end',
-    marginBottom: 10,
+    marginBottom: 25,
   },
   username: {
     color: 'white',
     fontSize: 16,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: 10,
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
@@ -152,6 +157,7 @@ const styles = StyleSheet.create({
   caption: {
     color: 'white',
     fontSize: 14,
+    marginBottom: 4,
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
@@ -160,6 +166,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 20,
     alignItems: 'center',
+    bottom: 65,
   },
   actionButton: {
     alignItems: 'center',

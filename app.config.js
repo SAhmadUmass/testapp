@@ -18,14 +18,14 @@ export default {
     ],
     ios: {
       supportsTablet: true,
-      bundleIdentifier: 'com.testapp'
+      bundleIdentifier: 'com.shaheer.tiktokclone'
     },
     android: {
       adaptiveIcon: {
         foregroundImage: './assets/adaptive-icon.png',
         backgroundColor: '#ffffff'
       },
-      package: 'com.testapp'
+      package: 'com.shaheer.tiktokclone'
     },
     web: {
       favicon: './assets/favicon.png'

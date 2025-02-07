@@ -1,0 +1,218 @@
+{
+    "projectId": "67a3ff370019f23110f1",
+    "databases": [
+        {
+            "$id": "main",
+            "name": "main",
+            "enabled": true
+        }
+    ],
+    "collections": [
+        {
+            "$id": "videos",
+            "databaseId": "main",
+            "name": "videos",
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "title",
+                    "type": "string",
+                    "size": 255,
+                    "required": true
+                },
+                {
+                    "key": "video_url",
+                    "type": "string",
+                    "size": 2048,
+                    "required": true
+                },
+                {
+                    "key": "thumbnail_url",
+                    "type": "string",
+                    "size": 2048,
+                    "required": true
+                },
+                {
+                    "key": "cuisine_type",
+                    "type": "enum",
+                    "elements": ["Italian", "Mexican", "Chinese", "Indian", "Japanese", "American", "Thai", "Mediterranean"],
+                    "required": true
+                },
+                {
+                    "key": "difficulty",
+                    "type": "enum",
+                    "elements": ["Easy", "Medium", "Hard"],
+                    "required": true
+                },
+                {
+                    "key": "duration",
+                    "type": "integer",
+                    "required": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "cuisine_difficulty",
+                    "type": "key",
+                    "attributes": ["cuisine_type", "difficulty"]
+                },
+                {
+                    "key": "title_search",
+                    "type": "fulltext",
+                    "attributes": ["title"]
+                }
+            ],
+            "enabled": true
+        },
+        {
+            "$id": "users",
+            "databaseId": "main",
+            "name": "users",
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "name",
+                    "type": "string",
+                    "size": 255,
+                    "required": true
+                },
+                {
+                    "key": "email",
+                    "type": "email",
+                    "required": true
+                },
+                {
+                    "key": "profile_picture",
+                    "type": "string",
+                    "size": 2048,
+                    "required": false
+                },
+                {
+                    "key": "created_at",
+                    "type": "datetime",
+                    "required": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "email_unique",
+                    "type": "unique",
+                    "attributes": ["email"]
+                }
+            ],
+            "enabled": true
+        },
+        {
+            "$id": "likes",
+            "databaseId": "main",
+            "name": "likes",
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "relationship",
+                    "relatedCollection": "users",
+                    "relationType": "manyToOne",
+                    "onDelete": "cascade",
+                    "required": true
+                },
+                {
+                    "key": "videoId",
+                    "type": "relationship",
+                    "relatedCollection": "videos",
+                    "relationType": "manyToOne",
+                    "onDelete": "cascade",
+                    "required": true
+                },
+                {
+                    "key": "created_at",
+                    "type": "datetime",
+                    "required": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "user_video_unique",
+                    "type": "unique",
+                    "attributes": ["userId", "videoId"]
+                }
+            ],
+            "enabled": true
+        },
+        {
+            "$id": "saves",
+            "databaseId": "main",
+            "name": "saves",
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "relationship",
+                    "relatedCollection": "users",
+                    "relationType": "manyToOne",
+                    "onDelete": "cascade",
+                    "required": true
+                },
+                {
+                    "key": "videoId",
+                    "type": "relationship",
+                    "relatedCollection": "videos",
+                    "relationType": "manyToOne",
+                    "onDelete": "cascade",
+                    "required": true
+                },
+                {
+                    "key": "category",
+                    "type": "string",
+                    "size": 255,
+                    "required": false
+                }
+            ],
+            "indexes": [],
+            "enabled": true
+        },
+        {
+            "$id": "comments",
+            "databaseId": "main",
+            "name": "comments",
+            "documentSecurity": false,
+            "attributes": [
+                {
+                    "key": "userId",
+                    "type": "relationship",
+                    "relatedCollection": "users",
+                    "relationType": "manyToOne",
+                    "onDelete": "cascade",
+                    "required": true
+                },
+                {
+                    "key": "videoId",
+                    "type": "relationship",
+                    "relatedCollection": "videos",
+                    "relationType": "manyToOne",
+                    "onDelete": "cascade",
+                    "required": true
+                },
+                {
+                    "key": "text",
+                    "type": "string",
+                    "size": 1000,
+                    "required": true
+                },
+                {
+                    "key": "created_at",
+                    "type": "datetime",
+                    "required": true
+                }
+            ],
+            "indexes": [
+                {
+                    "key": "text_search",
+                    "type": "fulltext",
+                    "attributes": ["text"]
+                }
+            ],
+            "enabled": true
+        }
+    ]
+}

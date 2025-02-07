@@ -1,22 +1,21 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
-import { View, FlatList, StyleSheet, ViewToken, ViewabilityConfig, ActivityIndicator, TouchableOpacity, Text, Dimensions } from 'react-native';
+import { View, FlatList, StyleSheet, ViewToken, ViewabilityConfig, ActivityIndicator, Dimensions, Platform } from 'react-native';
 import { useStore } from '@/store';
 import VideoItem from '@/components/VideoItem';
 import { VideoPost } from '@/types';
-import { fetchVideos, seedVideos } from '@/services/videos';
+import { fetchVideos } from '@/services/videos';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useIsFocused } from '@react-navigation/native';
-
-// Import videos at the top level
-const localVideo1 = require('../../assets/videos/12997454_360_640_60fps.mp4');
-const localVideo2 = require('../../assets/videos/12854757_360_640_30fps.mp4');
 
 export default function FeedScreen() {
   const { videos, setVideos } = useStore();
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const insets = useSafeAreaInsets();
-  const { height: WINDOW_HEIGHT } = Dimensions.get('window');
+  const { height: WINDOW_HEIGHT, width: WINDOW_WIDTH } = Dimensions.get('window');
+  const flatListRef = useRef<FlatList>(null);
+
+  // Calculate actual screen height (excluding system UI)
+  const SCREEN_HEIGHT = WINDOW_HEIGHT - (Platform.OS === 'android' ? 0 : insets.top);
 
   // Fetch initial videos
   useEffect(() => {
@@ -29,53 +28,14 @@ export default function FeedScreen() {
     
     setIsLoading(true);
     const { videos: newVideos } = await fetchVideos();
-    
-    // Add local test videos if this is the first load
-    const localTestVideos: VideoPost[] = [
-      {
-        id: 'local1',
-        userId: 'localUser',
-        username: 'LocalTester',
-        videoUrl: localVideo1,
-        caption: 'Local Test Video (60fps)',
-        likes: 0,
-        comments: 0,
-        createdAt: new Date(),
-        isLocal: true
-      },
-      {
-        id: 'local2',
-        userId: 'localUser',
-        username: 'LocalTester',
-        videoUrl: localVideo2,
-        caption: 'Local Test Video (30fps)',
-        likes: 0,
-        comments: 0,
-        createdAt: new Date(),
-        isLocal: true
-      }
-    ];
-    setVideos([...localTestVideos, ...newVideos]);
-    setIsLoading(false);
-  };
-
-  // Handle end reached (infinite scroll)
-  const handleEndReached = () => {
-    // Disabled for now until we implement pagination with Appwrite
-    return;
-  };
-
-  // Handle seeding
-  const handleSeed = async () => {
-    setIsLoading(true);
-    await seedVideos();
-    await loadVideos();
+    setVideos(newVideos);
     setIsLoading(false);
   };
 
   // Configure which items are considered "viewable"
   const viewabilityConfig: ViewabilityConfig = {
-    itemVisiblePercentThreshold: 80
+    itemVisiblePercentThreshold: 80,
+    minimumViewTime: 100
   };
 
   // Handle viewability changes
@@ -93,7 +53,11 @@ export default function FeedScreen() {
 
   // Render each video item
   const renderItem = ({ item, index }: { item: VideoPost; index: number }) => (
-    <VideoItem video={item} isActive={index === activeVideoIndex} isFirst={index === 0} />
+    <VideoItem 
+      video={item} 
+      isActive={index === activeVideoIndex} 
+      isFirst={index === 0} 
+    />
   );
 
   // Get key for FlatList items
@@ -111,34 +75,28 @@ export default function FeedScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Temporary Seed Button */}
-      <TouchableOpacity 
-        style={[styles.seedButton, { top: insets.top + 10 }]} 
-        onPress={handleSeed}
-        disabled={isLoading}
-      >
-        <Text style={styles.seedButtonText}>
-          {isLoading ? 'Loading...' : 'Seed Videos'}
-        </Text>
-      </TouchableOpacity>
-
+    <View style={[styles.container, { height: SCREEN_HEIGHT }]}>
       <FlatList
-        style={styles.list}
+        ref={flatListRef}
         data={videos}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         pagingEnabled
         showsVerticalScrollIndicator={false}
-        viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
-        onEndReached={handleEndReached}
-        onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
-        removeClippedSubviews={true}
-        maxToRenderPerBatch={3}
-        windowSize={5}
-        snapToInterval={WINDOW_HEIGHT}
+        viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+        snapToInterval={SCREEN_HEIGHT}
+        snapToAlignment="start"
         decelerationRate="fast"
+        getItemLayout={(_, index) => ({
+          length: SCREEN_HEIGHT,
+          offset: SCREEN_HEIGHT * index,
+          index,
+        })}
+        initialNumToRender={2}
+        maxToRenderPerBatch={3}
+        windowSize={3}
+        removeClippedSubviews={Platform.OS === 'android'}
       />
     </View>
   );
@@ -147,26 +105,11 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
-  },
-  list: {
-    flex: 1,
+    backgroundColor: '#000',
   },
   loader: {
-    padding: 20,
+    padding: 10,
     alignItems: 'center',
-  },
-  seedButton: {
-    position: 'absolute',
-    right: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20,
-    zIndex: 1,
-  },
-  seedButtonText: {
-    color: 'white',
-    fontSize: 14,
+    justifyContent: 'center',
   },
 });

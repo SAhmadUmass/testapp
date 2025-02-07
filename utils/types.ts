@@ -1,41 +1,27 @@
-import { Timestamp } from 'firebase/firestore';
-
 export interface User {
   id: string;
-  username: string;
+  name: string;
   email: string;
-  displayName: string;
-  photoURL: string;
-  bio?: string;
-  followers: number;
-  following: number;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  profile_picture?: string;
+  created_at: string;
 }
 
 export interface Video {
   id: string;
-  userId: string;
-  caption: string;
-  videoUrl: string;
-  thumbnailUrl: string;
-  likes: number;
-  comments: number;
-  shares: number;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-  user?: User;
+  title: string;
+  video_url: string;
+  thumbnail_url: string;
+  cuisine_type: 'Italian' | 'Mexican' | 'Chinese' | 'Indian' | 'Japanese' | 'American' | 'Thai' | 'Mediterranean';
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  duration: number;
 }
 
 export interface Comment {
   id: string;
-  videoId: string;
   userId: string;
+  videoId: string;
   text: string;
-  likes: number;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-  user?: User;
+  created_at: string;
 }
 
 export interface Collection {
@@ -44,12 +30,24 @@ export interface Collection {
   name: string;
   description?: string;
   videos: string[]; // Array of video IDs
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: string; // ISO date string
+  updatedAt: string; // ISO date string
 }
 
-export interface FirebaseResponse<T> {
-  data: T | null;
-  error: Error | null;
-  loading: boolean;
+export interface VideoPost {
+  id: string;
+  userId: string;
+  username: string;
+  videoUrl: string | number;
+  caption: string;
+  likes: number;
+  comments: number;
+  createdAt: Date;
+  isLocal?: boolean;
+  
+  // New fields from DBVideo
+  thumbnail_url: string;
+  cuisine_type: 'Italian' | 'Mexican' | 'Chinese' | 'Indian' | 'Japanese' | 'American' | 'Thai' | 'Mediterranean';
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  duration: number; // in seconds
 } 

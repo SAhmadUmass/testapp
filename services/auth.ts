@@ -1,6 +1,7 @@
-import { ID } from 'appwrite';
-import { account } from '@/config/appwrite';
+import { Account } from 'react-native-appwrite';
+import { account, ID, ensureDatabase, ensureCollections } from '@/config/appwrite';
 import { Models } from 'appwrite';
+import { createUserProfile } from './database';
 
 export type AppwriteUser = Models.User<Models.Preferences>;
 
@@ -16,6 +17,10 @@ export const signUp = async (
   name: string
 ): Promise<{ user: AppwriteUser | null; error: string | null }> => {
   try {
+    // Ensure database and collections exist first
+    await ensureDatabase();
+    await ensureCollections();
+    
     // Create user with unique ID
     const user = await account.create(
       ID.unique(),
@@ -24,9 +29,21 @@ export const signUp = async (
       name
     );
 
-    // If creation successful, immediately create a session
+    // If creation successful, create session and user profile
     if (user) {
+      // Create session
       await account.createEmailPasswordSession(email, password);
+      
+      // Create user profile in database
+      const { error: profileError } = await createUserProfile(user.$id, {
+        name,
+        email,
+        created_at: new Date().toISOString()
+      });
+
+      if (profileError) {
+        console.error('Error creating user profile:', profileError);
+      }
     }
 
     return { user, error: null };
