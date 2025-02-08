@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator, StyleSheet, Alert, Modal, ScrollView } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { getUserBookmarks, clearAllBookmarks } from '@/services/database';
 import { useStore } from '@/store';
@@ -8,7 +8,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Models } from 'appwrite';
 
 interface BookmarkedVideo extends Video {
-  bookmark: Models.Document;
+  bookmark: Models.Document & {
+    description?: string;
+  };
 }
 
 export default function BookmarksScreen() {
@@ -17,6 +19,7 @@ export default function BookmarksScreen() {
   const [bookmarks, setBookmarks] = useState<BookmarkedVideo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedDescription, setSelectedDescription] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.$id) {
@@ -41,6 +44,11 @@ export default function BookmarksScreen() {
       // Transform the data to match BookmarkedVideo type
       const transformedData = data?.map(item => {
         console.log('Processing bookmark item:', item);
+        // Get description from either bookmark or video
+        const description = item.bookmark.description || 
+          (item.video.description as string || '') || '';
+        console.log('Using description:', description);
+        
         return {
           id: item.video.$id,
           title: item.video.title,
@@ -49,11 +57,14 @@ export default function BookmarksScreen() {
           cuisine_type: item.video.cuisine_type,
           difficulty: item.video.difficulty,
           duration: item.video.duration,
-          bookmark: item.bookmark
+          bookmark: {
+            ...item.bookmark,
+            description: description
+          }
         };
       }) as BookmarkedVideo[];
 
-      console.log('Transformed bookmarks data:', transformedData);
+      console.log('Transformed bookmarks data:', JSON.stringify(transformedData, null, 2));
       setBookmarks(transformedData || []);
     } catch (err: any) {
       setError(err.message || 'Failed to load bookmarks');
@@ -207,12 +218,47 @@ export default function BookmarksScreen() {
                     {item.cuisine_type} • {item.duration}min
                   </Text>
                 </View>
+                {item.bookmark.description && (
+                  <TouchableOpacity 
+                    onPress={() => setSelectedDescription(item.bookmark.description || null)}
+                    style={styles.viewDescriptionButton}
+                  >
+                    <Ionicons name="information-circle-outline" size={16} color="#4F46E5" />
+                    <Text style={styles.viewDescriptionText}>View Description</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </TouchableOpacity>
           )}
           style={styles.list}
         />
       )}
+
+      {/* Description Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={!!selectedDescription}
+        onRequestClose={() => setSelectedDescription(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Description</Text>
+            <ScrollView 
+              style={styles.modalScrollView}
+              showsVerticalScrollIndicator={true}
+            >
+              <Text style={styles.modalDescription}>{selectedDescription}</Text>
+            </ScrollView>
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setSelectedDescription(null)}
+            >
+              <Text style={styles.modalCloseButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -309,6 +355,59 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  viewDescriptionButton: {
+    marginTop: 8,
+    padding: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  viewDescriptionText: {
+    color: '#4F46E5',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#1A1A1A',
+    borderRadius: 12,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+    paddingBottom: 16,
+  },
+  modalScrollView: {
+    marginBottom: 16,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+  },
+  modalDescription: {
+    color: '#fff',
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  modalCloseButton: {
+    backgroundColor: '#4F46E5',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalCloseButtonText: {
+    color: '#fff',
     fontSize: 16,
     fontWeight: '500',
   },

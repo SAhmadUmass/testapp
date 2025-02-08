@@ -74,6 +74,7 @@ export interface DBBookmark {
         $collectionId: string;
         $databaseId: string;
     };
+    description?: string;
     created_at: string;
 }
 

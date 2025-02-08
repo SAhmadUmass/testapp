@@ -363,7 +363,7 @@ export const hasUserLiked = async (videoId: string, userId: string): Promise<boo
     }
 };
 
-export const toggleBookmark = async (videoId: string, userId: string): Promise<{ bookmarked: boolean }> => {
+export const toggleBookmark = async (videoId: string, userId: string, description?: string): Promise<{ bookmarked: boolean }> => {
   try {
     // Check if bookmark exists
     const bookmarkExists = await databases.listDocuments(
@@ -390,13 +390,13 @@ export const toggleBookmark = async (videoId: string, userId: string): Promise<{
         COLLECTIONS.BOOKMARKS,
         ID.unique(),
         {
-          // Create proper relationship objects for both user and video
           userId: userId,
           videoId: videoId,
+          description: description || '', // Add description field
           'created-at': new Date().toISOString(),
         }
       );
-      console.log('Created bookmark with proper references - userId:', userId, 'videoId:', videoId);
+      console.log('Created bookmark with proper references - userId:', userId, 'videoId:', videoId, 'description:', description);
       return { bookmarked: true };
     }
   } catch (error: any) {
@@ -467,7 +467,8 @@ export const getUserBookmarks = async (userId: string) => {
           
           console.log('Fetching video for bookmark:', {
             bookmarkId: bookmark.$id,
-            videoId
+            videoId,
+            description: bookmark.description // Log description for debugging
           });
           
           const video = await databases.getDocument(
@@ -480,7 +481,10 @@ export const getUserBookmarks = async (userId: string) => {
           
           return {
             video,
-            bookmark
+            bookmark: {
+              ...bookmark,
+              description: bookmark.description || '' // Ensure description is included
+            }
           };
         } catch (error: any) {
           console.error('Error fetching video for bookmark:', {
