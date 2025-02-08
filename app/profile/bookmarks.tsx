@@ -91,7 +91,15 @@ export default function BookmarksScreen() {
   };
 
   const handleVideoPress = (video: BookmarkedVideo) => {
-    router.push(`/video/${video.id}`);
+    router.push({
+      pathname: '/bookmarkDetail',
+      params: {
+        title: video.title,
+        video_url: video.video_url,
+        description: video.bookmark.description || '',
+        storage_file_id: video.id
+      }
+    });
   };
 
   if (!user) {
