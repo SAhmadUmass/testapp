@@ -9,9 +9,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { functions } from '../config/appwrite';
 
 interface Message {
   id: string;
@@ -50,20 +52,47 @@ export default function ChatInterface({ bookmarkId, recipeContext }: ChatInterfa
     flatListRef.current?.scrollToEnd({ animated: true });
 
     try {
-      // TODO: Implement AI response logic here
-      // For now, just simulate a delay and send a mock response
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "This is a placeholder AI response. We'll implement the actual AI integration soon!",
-        isUser: false,
-        timestamp: new Date(),
+      // Format chat history for the AI
+      const formattedHistory = messages.map(msg => ({
+        role: msg.isUser ? 'User' : 'AI',
+        content: msg.text,
+      }));
+
+      // Prepare payload for AI function
+      const payload = {
+        videoDescription: recipeContext || 'No context provided',
+        question: userMessage.text,
+        chatHistory: formattedHistory,
       };
 
-      setMessages(prev => [...prev, aiResponse]);
+      // Call Appwrite function
+      const response = await functions.createExecution(
+        'aichatid',
+        JSON.stringify(payload)
+      );
+
+      // Parse the response
+      const responseData = JSON.parse(response.responseBody);
+
+      if (responseData.success && responseData.answer) {
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          text: responseData.answer,
+          isUser: false,
+          timestamp: new Date(),
+        };
+
+        setMessages(prev => [...prev, aiResponse]);
+      } else {
+        throw new Error('Invalid response from AI');
+      }
     } catch (error) {
       console.error('Error getting AI response:', error);
+      Alert.alert(
+        'Error',
+        'Failed to get AI response. Please try again.',
+        [{ text: 'OK' }]
+      );
     } finally {
       setIsLoading(false);
       flatListRef.current?.scrollToEnd({ animated: true });

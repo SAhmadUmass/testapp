@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Storage, ID } from 'react-native-appwrite';
+import { Client, Account, Databases, Storage, Functions, ID } from 'react-native-appwrite';
 import 'react-native-url-polyfill/auto';
 import Constants from 'expo-constants';
 
@@ -21,6 +21,7 @@ client
 export const account = new Account(client);
 export const databases = new Databases(client);
 export const storage = new Storage(client);
+export const functions = new Functions(client);
 
 // Database and Collection IDs
 export const DATABASE_ID = 'main';
