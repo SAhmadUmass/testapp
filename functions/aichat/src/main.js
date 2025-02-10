@@ -16,7 +16,7 @@ export default async ({ req, res, log, error }) => {
 
     // Initialize the chat model
     const model = new ChatOpenAI({
-      modelName: "gpt-3.5-turbo",
+      modelName: "gpt-4o-mini", //don't change this, until we implement whisper voice to text
       temperature: 0.7,
     });
 

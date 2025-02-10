@@ -6,6 +6,8 @@ import { useStore } from '@/store';
 import { Video } from '@/utils/types';
 import { Ionicons } from '@expo/vector-icons';
 import { Models } from 'appwrite';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useWindowDimensions } from 'react-native';
 
 interface BookmarkedVideo extends Video {
   bookmark: Models.Document & {
@@ -20,6 +22,7 @@ export default function BookmarksScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedDescription, setSelectedDescription] = useState<string | null>(null);
+  const { width, height } = useWindowDimensions();
 
   useEffect(() => {
     if (user?.$id) {
@@ -104,183 +107,223 @@ export default function BookmarksScreen() {
 
   if (!user) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.messageText}>
-          Please sign in to view your bookmarks
-        </Text>
-      </View>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'right', 'left']}>
+        <Stack.Screen
+          options={{
+            headerShown: false
+          }}
+        />
+        <View style={styles.container}>
+          <Text style={styles.messageText}>
+            Please sign in to view your bookmarks
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'right', 'left']}>
       <Stack.Screen
         options={{
           title: 'Bookmarks',
-          headerStyle: { backgroundColor: '#000' },
+          headerStyle: { 
+            backgroundColor: '#000',
+          },
+          headerShadowVisible: false,
           headerTintColor: '#fff',
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity 
+              onPress={() => router.back()}
+              style={styles.headerButton}
+            >
               <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
           ),
           headerRight: () => (
-            <View style={{ flexDirection: 'row', gap: 15 }}>
-              <TouchableOpacity onPress={loadBookmarks}>
+            <View style={styles.headerRightContainer}>
+              <TouchableOpacity 
+                onPress={loadBookmarks}
+                style={styles.headerButton}
+              >
                 <Ionicons name="refresh" size={24} color="white" />
               </TouchableOpacity>
             </View>
           ),
+          contentStyle: {
+            backgroundColor: '#000',
+          },
+          statusBarStyle: 'light',
+          statusBarTranslucent: true,
         }}
       />
 
-      {/* Action Buttons */}
-      <View style={styles.actionButtonsContainer}>
-        <TouchableOpacity 
-          style={[styles.actionButton, { backgroundColor: '#333' }]}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="arrow-back" size={20} color="white" />
-          <Text style={styles.actionButtonText}>Back</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.actionButton, { backgroundColor: '#4F46E5' }]}
-          onPress={loadBookmarks}
-        >
-          <Ionicons name="refresh" size={20} color="white" />
-          <Text style={styles.actionButtonText}>Refresh</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.actionButton, { backgroundColor: '#DC2626' }]}
-          onPress={() => {
-            Alert.alert(
-              'Clear All Bookmarks',
-              'Are you sure you want to remove all your bookmarks?',
-              [
-                {
-                  text: 'Cancel',
-                  style: 'cancel',
-                },
-                {
-                  text: 'Clear All',
-                  style: 'destructive',
-                  onPress: handleClearAllBookmarks,
-                },
-              ]
-            );
-          }}
-        >
-          <Ionicons name="trash" size={20} color="white" />
-          <Text style={styles.actionButtonText}>Clear All</Text>
-        </TouchableOpacity>
-      </View>
-
-      {isLoading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#fff" />
-        </View>
-      ) : error ? (
-        <View style={styles.centerContainer}>
-          <Text style={styles.messageText}>{error}</Text>
-          <TouchableOpacity
-            onPress={loadBookmarks}
-            style={styles.retryButton}
-          >
-            <Text style={styles.retryButtonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      ) : bookmarks.length === 0 ? (
-        <View style={styles.centerContainer}>
-          <Text style={styles.messageText}>
-            You haven't bookmarked any videos yet
-          </Text>
+      <View style={styles.container}>
+        {/* Action Buttons */}
+        <View style={styles.actionButtonsContainer}>
           <TouchableOpacity 
-            style={styles.backButton}
+            style={[styles.actionButton, { backgroundColor: '#333' }]}
             onPress={() => router.back()}
           >
             <Ionicons name="arrow-back" size={20} color="white" />
-            <Text style={styles.backButtonText}>Go Back</Text>
+            <Text style={styles.actionButtonText}>Back</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.actionButton, { backgroundColor: '#4F46E5' }]}
+            onPress={loadBookmarks}
+          >
+            <Ionicons name="refresh" size={20} color="white" />
+            <Text style={styles.actionButtonText}>Refresh</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.actionButton, { backgroundColor: '#DC2626' }]}
+            onPress={() => {
+              Alert.alert(
+                'Clear All Bookmarks',
+                'Are you sure you want to remove all your bookmarks?',
+                [
+                  {
+                    text: 'Cancel',
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'Clear All',
+                    style: 'destructive',
+                    onPress: handleClearAllBookmarks,
+                  },
+                ]
+              );
+            }}
+          >
+            <Ionicons name="trash" size={20} color="white" />
+            <Text style={styles.actionButtonText}>Clear All</Text>
           </TouchableOpacity>
         </View>
-      ) : (
-        <FlatList
-          data={bookmarks}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => handleVideoPress(item)}
-              style={styles.videoItem}
-            >
-              <Image
-                source={{ uri: item.thumbnail_url }}
-                style={styles.thumbnail}
-              />
-              <View style={styles.videoDetails}>
-                <Text style={styles.videoTitle} numberOfLines={2}>
-                  {item.title}
-                </Text>
-                <View style={styles.videoMetadata}>
-                  <Text style={styles.metadataText}>
-                    {item.cuisine_type} • {item.duration}min
-                  </Text>
-                </View>
-                {item.bookmark.description && (
-                  <TouchableOpacity 
-                    onPress={() => setSelectedDescription(item.bookmark.description || null)}
-                    style={styles.viewDescriptionButton}
-                  >
-                    <Ionicons name="information-circle-outline" size={16} color="#4F46E5" />
-                    <Text style={styles.viewDescriptionText}>View Description</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </TouchableOpacity>
-          )}
-          style={styles.list}
-        />
-      )}
 
-      {/* Description Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={!!selectedDescription}
-        onRequestClose={() => setSelectedDescription(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Description</Text>
-            <ScrollView 
-              style={styles.modalScrollView}
-              showsVerticalScrollIndicator={true}
-            >
-              <Text style={styles.modalDescription}>{selectedDescription}</Text>
-            </ScrollView>
+        {isLoading ? (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color="#fff" />
+          </View>
+        ) : error ? (
+          <View style={styles.centerContainer}>
+            <Text style={styles.messageText}>{error}</Text>
             <TouchableOpacity
-              style={styles.modalCloseButton}
-              onPress={() => setSelectedDescription(null)}
+              onPress={loadBookmarks}
+              style={styles.retryButton}
             >
-              <Text style={styles.modalCloseButtonText}>Close</Text>
+              <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
-    </View>
+        ) : bookmarks.length === 0 ? (
+          <View style={styles.centerContainer}>
+            <Text style={styles.messageText}>
+              You haven't bookmarked any videos yet
+            </Text>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={20} color="white" />
+              <Text style={styles.backButtonText}>Go Back</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={bookmarks}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.list}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => handleVideoPress(item)}
+                style={styles.videoItem}
+              >
+                <Image
+                  source={{ uri: item.thumbnail_url }}
+                  style={styles.thumbnail}
+                />
+                <View style={styles.videoDetails}>
+                  <Text style={styles.videoTitle} numberOfLines={2}>
+                    {item.title}
+                  </Text>
+                  <View style={styles.videoMetadata}>
+                    <Text style={styles.metadataText}>
+                      {item.cuisine_type} • {item.duration}min
+                    </Text>
+                  </View>
+                  {item.bookmark.description && (
+                    <TouchableOpacity 
+                      onPress={() => setSelectedDescription(item.bookmark.description || null)}
+                      style={styles.viewDescriptionButton}
+                    >
+                      <Ionicons name="information-circle-outline" size={16} color="#4F46E5" />
+                      <Text style={styles.viewDescriptionText}>View Description</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+        )}
+
+        {/* Description Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={!!selectedDescription}
+          onRequestClose={() => setSelectedDescription(null)}
+        >
+          <View style={[styles.modalOverlay, {
+            paddingTop: 24,
+            paddingBottom: 24,
+            paddingLeft: 24,
+            paddingRight: 24,
+          }]}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Description</Text>
+              <ScrollView 
+                style={styles.modalScrollView}
+                showsVerticalScrollIndicator={true}
+              >
+                <Text style={styles.modalDescription}>{selectedDescription}</Text>
+              </ScrollView>
+              <TouchableOpacity
+                style={styles.modalCloseButton}
+                onPress={() => setSelectedDescription(null)}
+              >
+                <Text style={styles.modalCloseButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
   container: {
     flex: 1,
     backgroundColor: '#000',
+  },
+  headerButton: {
+    padding: 12,
+  },
+  headerRightContainer: {
+    flexDirection: 'row',
+    gap: 15,
   },
   centerContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
   },
   messageText: {
     color: '#fff',
@@ -317,24 +360,27 @@ const styles = StyleSheet.create({
   },
   videoItem: {
     flexDirection: 'row',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#333',
   },
   thumbnail: {
-    width: 96,
-    height: 64,
-    borderRadius: 4,
+    width: 120,
+    height: 80,
+    borderRadius: 8,
     backgroundColor: '#333',
   },
   videoDetails: {
-    marginLeft: 16,
+    marginLeft: 12,
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'space-between',
   },
   videoTitle: {
     color: '#fff',
-    fontWeight: '500',
+    fontWeight: '600',
+    fontSize: 16,
+    lineHeight: 22,
   },
   videoMetadata: {
     flexDirection: 'row',
@@ -348,7 +394,7 @@ const styles = StyleSheet.create({
   actionButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 16,
+    paddingVertical: 12,
     backgroundColor: '#111',
     borderBottomWidth: 1,
     borderBottomColor: '#333',
@@ -356,10 +402,10 @@ const styles = StyleSheet.create({
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
-    gap: 8,
+    gap: 6,
   },
   actionButtonText: {
     color: 'white',
@@ -383,19 +429,16 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
   },
   modalContent: {
     backgroundColor: '#1A1A1A',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
     width: '90%',
     maxHeight: '80%',
-    paddingBottom: 16,
   },
   modalScrollView: {
-    marginBottom: 16,
-    maxHeight: '80%',
+    marginVertical: 16,
   },
   modalTitle: {
     color: '#fff',
