@@ -35,13 +35,26 @@
                 {
                     "key": "cuisine_type",
                     "type": "enum",
-                    "elements": ["Italian", "Mexican", "Chinese", "Indian", "Japanese", "American", "Thai", "Mediterranean"],
+                    "elements": [
+                        "Italian",
+                        "Mexican",
+                        "Chinese",
+                        "Indian",
+                        "Japanese",
+                        "American",
+                        "Thai",
+                        "Mediterranean"
+                    ],
                     "required": true
                 },
                 {
                     "key": "difficulty",
                     "type": "enum",
-                    "elements": ["Easy", "Medium", "Hard"],
+                    "elements": [
+                        "Easy",
+                        "Medium",
+                        "Hard"
+                    ],
                     "required": true
                 },
                 {
@@ -54,12 +67,17 @@
                 {
                     "key": "cuisine_difficulty",
                     "type": "key",
-                    "attributes": ["cuisine_type", "difficulty"]
+                    "attributes": [
+                        "cuisine_type",
+                        "difficulty"
+                    ]
                 },
                 {
                     "key": "title_search",
                     "type": "fulltext",
-                    "attributes": ["title"]
+                    "attributes": [
+                        "title"
+                    ]
                 }
             ],
             "enabled": true
@@ -97,7 +115,9 @@
                 {
                     "key": "email_unique",
                     "type": "unique",
-                    "attributes": ["email"]
+                    "attributes": [
+                        "email"
+                    ]
                 }
             ],
             "enabled": true
@@ -134,7 +154,10 @@
                 {
                     "key": "user_video_unique",
                     "type": "unique",
-                    "attributes": ["userId", "videoId"]
+                    "attributes": [
+                        "userId",
+                        "videoId"
+                    ]
                 }
             ],
             "enabled": true
@@ -209,10 +232,34 @@
                 {
                     "key": "text_search",
                     "type": "fulltext",
-                    "attributes": ["text"]
+                    "attributes": [
+                        "text"
+                    ]
                 }
             ],
             "enabled": true
+        }
+    ],
+    "functions": [
+        {
+            "$id": "aichatid",
+            "name": "aichat",
+            "runtime": "node-18.0",
+            "specification": "s-0.5vcpu-512mb",
+            "execute": [
+                "any"
+            ],
+            "events": [],
+            "scopes": [
+                "users.read"
+            ],
+            "schedule": "",
+            "timeout": 15,
+            "enabled": true,
+            "logging": true,
+            "entrypoint": "src/main.js",
+            "commands": "npm install",
+            "path": "functions/aichat"
         }
     ]
 }
