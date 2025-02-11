@@ -14,6 +14,7 @@ import {
 import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { functions } from '../config/appwrite';
+import AudioRecorder from './AudioRecorder';
 
 interface Message {
   id: string;
@@ -99,6 +100,25 @@ export default function ChatInterface({ bookmarkId, recipeContext }: ChatInterfa
     }
   };
 
+  const handleTranscription = (transcription: string) => {
+    console.log('Received transcription:', transcription);
+    setInputText(transcription);
+  };
+
+  const handleRecordingError = (error: string) => {
+    console.error('Recording error:', error);
+    Alert.alert(
+      'Recording Error',
+      error,
+      [
+        { 
+          text: 'OK',
+          onPress: () => console.log('Recording error alert closed')
+        }
+      ]
+    );
+  };
+
   const renderMessage = ({ item }: { item: Message }) => (
     <View style={[
       styles.messageContainer,
@@ -143,6 +163,10 @@ export default function ChatInterface({ bookmarkId, recipeContext }: ChatInterfa
       )}
 
       <View style={styles.inputContainer}>
+        <AudioRecorder
+          onTranscriptionComplete={handleTranscription}
+          onError={handleRecordingError}
+        />
         <TextInput
           style={styles.input}
           value={inputText}
@@ -213,6 +237,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#eee',
     backgroundColor: '#fff',
+    alignItems: 'center',
   },
   input: {
     flex: 1,
@@ -220,7 +245,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    marginRight: 8,
+    marginHorizontal: 8,
     fontSize: 16,
     maxHeight: 100,
   },
