@@ -27,16 +27,6 @@ export default function BookmarkDetail() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams() as BookmarkDetailParams;
   
-  // Log initial params
-  useEffect(() => {
-    console.log('BookmarkDetail - Initial Params:', {
-      title: params.title,
-      hasVideoUrl: !!params.video_url,
-      hasStorageFileId: !!params.storage_file_id,
-      descriptionLength: params.description?.length || 0
-    });
-  }, []);
-
   // Calculate actual screen height (excluding system UI)
   const SCREEN_HEIGHT = WINDOW_HEIGHT - (Platform.OS === 'android' ? 0 : insets.top);
   
@@ -64,41 +54,19 @@ export default function BookmarkDetail() {
   }
 
   const togglePlayPause = async () => {
-    if (!videoRef.current) {
-      console.warn('BookmarkDetail - Toggle failed: Video ref is null');
-      return;
-    }
+    if (!videoRef.current) return;
     
     try {
-      console.log('BookmarkDetail - Attempting to toggle video:', {
-        currentlyPlaying: isPlaying,
-        hasVideoRef: !!videoRef.current
-      });
-
       if (isPlaying) {
         await videoRef.current.pauseAsync();
-        console.log('BookmarkDetail - Video paused successfully');
       } else {
         await videoRef.current.playAsync();
-        console.log('BookmarkDetail - Video resumed successfully');
       }
       setIsPlaying(!isPlaying);
     } catch (error) {
-      console.error('BookmarkDetail - Error toggling video playback:', {
-        error,
-        wasPlaying: isPlaying
-      });
+      console.error('Error toggling video playback:', error);
     }
   };
-
-  // Log ChatInterface props
-  useEffect(() => {
-    console.log('BookmarkDetail - ChatInterface props:', {
-      bookmarkId: storage_file_id,
-      hasRecipeContext: !!description,
-      recipeContextLength: description?.length || 0
-    });
-  }, [storage_file_id, description]);
 
   return (
     <View style={styles.container}>
@@ -129,26 +97,12 @@ export default function BookmarkDetail() {
           onPlaybackStatusUpdate={status => {
             setStatus(status);
             if (status.isLoaded) {
-              console.log('BookmarkDetail - Video loaded successfully:', {
-                durationMillis: status.durationMillis,
-                positionMillis: status.positionMillis,
-                isPlaying: status.isPlaying,
-                isBuffering: status.isBuffering
-              });
               setIsLoading(false);
             }
           }}
           onError={(error) => {
-            console.error('BookmarkDetail - Video playback error:', {
-              error,
-              videoUrl: video_url
-            });
+            console.error('Error playing video:', error);
             setIsLoading(false);
-          }}
-          onLoad={() => {
-            console.log('BookmarkDetail - Video started loading:', {
-              videoUrl: video_url
-            });
           }}
         />
         
