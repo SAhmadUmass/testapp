@@ -51,10 +51,10 @@ export interface VideoPost {
   createdAt: Date;
   isLocal?: boolean;
   
-  // New fields from DBVideo
-  thumbnail_url: string;
-  cuisine_type: 'Italian' | 'Mexican' | 'Chinese' | 'Indian' | 'Japanese' | 'American' | 'Thai' | 'Mediterranean';
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  duration: number; // in seconds
-  description: string;
+  // New fields from DBVideo (optional)
+  thumbnail_url?: string;
+  cuisine_type?: 'Italian' | 'Mexican' | 'Chinese' | 'Indian' | 'Japanese' | 'American' | 'Thai' | 'Mediterranean';
+  difficulty?: 'Easy' | 'Medium' | 'Hard';
+  duration?: number; // in seconds
+  description?: string;
 } 

@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState, useEffect } from 'react';
-import { View, FlatList, StyleSheet, ViewToken, ViewabilityConfig, ActivityIndicator, Dimensions, Platform, Pressable } from 'react-native';
+import { View, FlatList, StyleSheet, ViewToken, ViewabilityConfig, ActivityIndicator, Dimensions, Platform, Pressable, Text, TouchableOpacity } from 'react-native';
 import { useStore } from '@/store';
 import VideoItem from '@/components/VideoItem';
 import { VideoPost } from '@/types';
@@ -20,6 +20,17 @@ export default function FeedScreen() {
 
   // Calculate actual screen height (excluding system UI)
   const SCREEN_HEIGHT = WINDOW_HEIGHT - (Platform.OS === 'android' ? 0 : insets.top);
+
+  // Dynamic styles that depend on window height and insets
+  const dynamicStyles = StyleSheet.create({
+    emptyContainer: {
+      flex: 1,
+      height: WINDOW_HEIGHT - (Platform.OS === 'android' ? 0 : insets.top),
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#000',
+    },
+  });
 
   // Fetch initial videos
   useEffect(() => {
@@ -95,6 +106,22 @@ export default function FeedScreen() {
         pagingEnabled
         showsVerticalScrollIndicator={false}
         ListFooterComponent={renderFooter}
+        ListEmptyComponent={
+          !isLoading ? (
+            <View style={dynamicStyles.emptyContainer}>
+              <Text style={styles.emptyText}>No videos fit your criteria</Text>
+              <TouchableOpacity 
+                style={styles.clearFiltersButton}
+                onPress={() => {
+                  useStore.getState().clearFilters();
+                  setIsFilterVisible(false);
+                }}
+              >
+                <Text style={styles.clearFiltersText}>Clear Filters</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null
+        }
         viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
         snapToInterval={SCREEN_HEIGHT}
         snapToAlignment="start"
@@ -147,7 +174,7 @@ const styles = StyleSheet.create({
   filterButton: {
     position: 'absolute',
     right: 16,
-    width: 44, // Slightly smaller for top placement
+    width: 44,
     height: 44,
     borderRadius: 22,
     backgroundColor: COLORS.white,
@@ -161,6 +188,23 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    zIndex: 1, // Ensure it stays above videos
+    zIndex: 1,
+  },
+  emptyText: {
+    color: '#fff',
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  clearFiltersButton: {
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  clearFiltersText: {
+    color: COLORS.black,
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
