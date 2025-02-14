@@ -1,0 +1,22 @@
+{
+  "name": "aicomposite",
+  "version": "1.0.0",
+  "description": "Composite function for handling both audio transcription and AI chat",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@langchain/core": "^0.3.39",
+    "@langchain/openai": "^0.4.3",
+    "langchain": "^0.3.15",
+    "node-appwrite": "^14.2.0",
+    "openai": "^4.28.0",
+    "dotenv": "^16.4.1",
+    "form-data": "^4.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5"
+  }
+}

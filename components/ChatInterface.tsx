@@ -29,6 +29,9 @@ interface ChatInterfaceProps {
   recipeContext?: string;
 }
 
+// Feature flag for composite endpoint
+const USE_COMPOSITE_ENDPOINT = false; // Set to true to use new composite function
+
 export default function ChatInterface({ bookmarkId, recipeContext }: ChatInterfaceProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -79,9 +82,10 @@ export default function ChatInterface({ bookmarkId, recipeContext }: ChatInterfa
         chatHistory: `${formattedHistory.length} messages`  // Log length instead of full history for clarity
       });
 
-      // Call Appwrite function
+      // Call Appwrite function with appropriate function ID
+      const functionId = USE_COMPOSITE_ENDPOINT ? 'aicompositeid' : 'aichatid';
       const response = await functions.createExecution(
-        'aichatid',
+        functionId,
         JSON.stringify(payload)
       );
 
@@ -114,9 +118,74 @@ export default function ChatInterface({ bookmarkId, recipeContext }: ChatInterfa
     }
   };
 
-  const handleTranscription = (transcription: string) => {
-    console.log('Received transcription:', transcription);
-    setInputText(transcription);
+  // New function to handle transcribed audio
+  const handleTranscription = async (transcription: string) => {
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: transcription,
+      isUser: true,
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+
+    // Scroll to bottom
+    flatListRef.current?.scrollToEnd({ animated: true });
+
+    try {
+      // Format chat history for the AI
+      const formattedHistory = messages.map(msg => ({
+        role: msg.isUser ? 'User' : 'AI',
+        content: msg.text,
+      }));
+
+      // Prepare payload for AI function
+      const payload = {
+        videoDescription: recipeContext || 'No context provided',
+        question: transcription,
+        chatHistory: formattedHistory,
+        additionalContext: extraContext || '',
+      };
+
+      console.log('ChatInterface - Processing transcription with payload:', {
+        ...payload,
+        chatHistory: `${formattedHistory.length} messages`
+      });
+
+      // Call AI function
+      const response = await functions.createExecution(
+        'aichatid',
+        JSON.stringify(payload)
+      );
+
+      // Parse the response
+      const responseData = JSON.parse(response.responseBody);
+
+      if (responseData.success && responseData.answer) {
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          text: responseData.answer,
+          isUser: false,
+          timestamp: new Date(),
+        };
+
+        setMessages(prev => [...prev, aiResponse]);
+        console.log('ChatInterface - Received AI response for transcription');
+      } else {
+        throw new Error('Invalid response from AI');
+      }
+    } catch (error) {
+      console.error('ChatInterface - Error getting AI response:', error);
+      Alert.alert(
+        'Error',
+        'Failed to get AI response. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }
   };
 
   const handleRecordingError = (error: string) => {
@@ -179,7 +248,7 @@ export default function ChatInterface({ bookmarkId, recipeContext }: ChatInterfa
       <View style={styles.inputContainer}>
         <AudioRecorder
           onTranscriptionComplete={handleTranscription}
-          onError={handleRecordingError}
+          onError={(error) => Alert.alert('Error', error)}
         />
         <TextInput
           style={styles.input}
