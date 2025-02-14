@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { FontAwesome, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { functions } from '../config/appwrite';
 import AudioRecorder from './AudioRecorder';
+import { useExtraContextStore } from '../state/extraContextStore';
 
 interface Message {
   id: string;
@@ -34,6 +35,12 @@ export default function ChatInterface({ bookmarkId, recipeContext }: ChatInterfa
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+  const { extraContext } = useExtraContextStore();
+
+  // Log extra context when component mounts or extraContext changes
+  useEffect(() => {
+    console.log('ChatInterface - Current extra context:', extraContext);
+  }, [extraContext]);
 
   const sendMessage = async () => {
     if (!inputText.trim()) return;
@@ -59,12 +66,18 @@ export default function ChatInterface({ bookmarkId, recipeContext }: ChatInterfa
         content: msg.text,
       }));
 
-      // Prepare payload for AI function
+      // Prepare payload for AI function with additional context
       const payload = {
         videoDescription: recipeContext || 'No context provided',
         question: userMessage.text,
         chatHistory: formattedHistory,
+        additionalContext: extraContext || '',
       };
+
+      console.log('ChatInterface - Sending message with payload:', {
+        ...payload,
+        chatHistory: `${formattedHistory.length} messages`  // Log length instead of full history for clarity
+      });
 
       // Call Appwrite function
       const response = await functions.createExecution(
@@ -84,11 +97,12 @@ export default function ChatInterface({ bookmarkId, recipeContext }: ChatInterfa
         };
 
         setMessages(prev => [...prev, aiResponse]);
+        console.log('ChatInterface - Received AI response successfully');
       } else {
         throw new Error('Invalid response from AI');
       }
     } catch (error) {
-      console.error('Error getting AI response:', error);
+      console.error('ChatInterface - Error getting AI response:', error);
       Alert.alert(
         'Error',
         'Failed to get AI response. Please try again.',
